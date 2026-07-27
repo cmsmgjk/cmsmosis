@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <title>CMSmosis · 개념이 스며든다</title>
 
-<meta name="theme-color" content="#58cc02" />
+<meta name="theme-color" content="#4ecdb0" />
 <meta name="description" content="중등 수학·과학 개념을 소리 내어 말하며 외우는 학습 앱" />
 <link rel="manifest" href="manifest.json" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
@@ -21,21 +21,21 @@
    디자인 시스템
    ============================================================ */
 :root {
-  --green:        #58cc02;
-  --green-dark:   #46a302;
-  --blue:         #1cb0f6;
-  --blue-dark:    #1899d6;
-  --yellow:       #ffc800;
-  --yellow-dark:  #e6a100;
-  --red:          #ff4b4b;
-  --red-dark:     #e03b3b;
-  --purple:       #ce82ff;
+  --green:        #4ecdb0;
+  --green-dark:   #3aab92;
+  --blue:         #5ec5e0;
+  --blue-dark:    #46a8c2;
+  --yellow:       #f7c948;
+  --yellow-dark:  #dcac2c;
+  --red:          #ff8f8f;
+  --red-dark:     #e97676;
+  --purple:       #b8a7e0;
 
-  --ink:          #3c3c3c;
-  --ink-soft:     #777777;
-  --line:         #e5e5e5;
+  --ink:          #3a4a46;
+  --ink-soft:     #7d8c88;
+  --line:         #e3eeea;
   --surface:      #ffffff;
-  --bg:           #fafafa;
+  --bg:           #f4fbf9;
 
   --radius:       18px;
   --shadow-lift:  0 4px 14px rgba(0,0,0,.07);
@@ -78,7 +78,7 @@ body {
 
 .btn-green  { background: var(--green);  box-shadow: 0 4px 0 var(--green-dark); }
 .btn-blue   { background: var(--blue);   box-shadow: 0 4px 0 var(--blue-dark); }
-.btn-yellow { background: var(--yellow); box-shadow: 0 4px 0 var(--yellow-dark); color: #6b4d00; }
+.btn-yellow { background: var(--yellow); box-shadow: 0 4px 0 var(--yellow-dark); color: #7a5f1e; }
 .btn-red    { background: var(--red);    box-shadow: 0 4px 0 var(--red-dark); }
 .btn-ghost  {
   background: #fff; color: var(--ink-soft);
@@ -100,7 +100,7 @@ body {
 .logo-mark {
   width: 78px; height: 78px;
   border-radius: 24px;
-  background: linear-gradient(145deg, var(--green), #7ee03a);
+  background: linear-gradient(145deg, var(--green), #86dfc9);
   box-shadow: 0 8px 0 var(--green-dark);
   display: grid; place-items: center;
   font-size: 38px;
@@ -128,7 +128,7 @@ body {
   width: 100%; padding: 14px 16px;
   border: 2px solid var(--line); border-radius: 14px;
   font-family: inherit; font-size: 15px; font-weight: 600;
-  outline: none; background: #fbfbfb;
+  outline: none; background: #fbfefd;
   transition: border-color .15s ease;
 }
 .field input:focus { border-color: var(--blue); background: #fff; }
@@ -157,7 +157,7 @@ body {
 /* ---------- 상단 HUD ---------- */
 .topbar {
   position: sticky; top: 0; z-index: 30;
-  background: rgba(250,250,250,.94);
+  background: rgba(244,251,249,.94);
   backdrop-filter: blur(8px);
   padding: 12px 16px 10px;
   border-bottom: 1px solid var(--line);
@@ -171,14 +171,14 @@ body {
   padding: 6px 12px;
   font-size: 13px; font-weight: 900;
 }
-.chip.streak { color: #ff8a00; }
+.chip.streak { color: #ff9f5e; }
 .chip.level   { color: var(--blue-dark); }
 .chip-spacer { flex: 1; }
 .icon-btn {
   border: none; background: transparent; cursor: pointer;
   font-size: 18px; padding: 6px; border-radius: 10px; color: var(--ink-soft);
 }
-.icon-btn:hover { background: #eee; }
+.icon-btn:hover { background: #eef5f3; }
 
 .goal-wrap { margin-top: 10px; }
 .goal-row {
@@ -192,7 +192,7 @@ body {
 }
 .goalbar-fill {
   height: 100%; width: 0%;
-  background: linear-gradient(90deg, var(--green), #8fe33f);
+  background: linear-gradient(90deg, var(--green), #86dfc9);
   border-radius: 999px;
   transition: width .45s cubic-bezier(.34,1.4,.64,1);
   position: relative;
@@ -224,7 +224,7 @@ main { flex: 1; padding: 18px 16px 8px; }
   transition: all .15s ease;
 }
 .unit-pill.on {
-  border-color: var(--green); background: #eefbe3; color: var(--green-dark);
+  border-color: var(--green); background: #e6f7f2; color: var(--green-dark);
 }
 
 /* ---------- 플래시카드 ---------- */
@@ -255,10 +255,10 @@ main { flex: 1; padding: 18px 16px 8px; }
   font-size: 10px; font-weight: 900; letter-spacing: .6px;
   padding: 4px 9px; border-radius: 999px; text-transform: uppercase;
 }
-.tag-unit  { background: #e8f6ff; color: var(--blue-dark); }
-.tag-stage { background: #fff4d1; color: #8a6100; }
-.tag-mode.speak { background: #e6f9e6; color: #2a7a2a; }
-.tag-mode.write { background: #f0ecff; color: #6b46c1; }
+.tag-unit  { background: #e7f6fb; color: var(--blue-dark); }
+.tag-stage { background: #fdf4da; color: #96762b; }
+.tag-mode.speak { background: #e3f7f0; color: #2f7a6a; }
+.tag-mode.write { background: #f1eefb; color: #7b62c4; }
 
 /* ---------- 자동 채점 결과 ---------- */
 .verdict {
@@ -266,9 +266,9 @@ main { flex: 1; padding: 18px 16px 8px; }
   font-size: 14px; font-weight: 800; display: none;
 }
 .verdict.on { display: block; animation: fadeUp .22s ease; }
-.verdict.pass { background: #e6f9e6; color: #1e6b1e; }
-.verdict.near { background: #fff6dd; color: #8a5a00; }
-.verdict.fail { background: #ffecec; color: #a33; }
+.verdict.pass { background: #e3f7f0; color: #2a7565; }
+.verdict.near { background: #fdf5e2; color: #96762b; }
+.verdict.fail { background: #ffeeee; color: #a33; }
 .verdict .kw {
   display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px;
 }
@@ -276,7 +276,7 @@ main { flex: 1; padding: 18px 16px 8px; }
   font-size: 11px; font-weight: 800; padding: 4px 9px; border-radius: 999px;
   background: rgba(255,255,255,.75);
 }
-.verdict .kw span.hit  { color: #1e6b1e; }
+.verdict .kw span.hit  { color: #2a7565; }
 .verdict .kw span.miss { color: #a33; text-decoration: line-through; opacity: .75; }
 
 .fc-question {
@@ -296,7 +296,7 @@ main { flex: 1; padding: 18px 16px 8px; }
 
 .fc-heard {
   margin-top: 14px; padding: 11px 14px;
-  background: #f0f8ff; border: 2px dashed #bfe3fb;
+  background: #edfaf6; border: 2px dashed #b6e6da;
   border-radius: 12px;
   font-size: 13px; font-weight: 600; color: var(--blue-dark);
   display: none;
@@ -338,12 +338,12 @@ main { flex: 1; padding: 18px 16px 8px; }
 .mr-top {
   display: flex; align-items: center; gap: 10px;
   padding: 13px 15px;
-  background: linear-gradient(90deg, #fffaf0, #fff);
+  background: linear-gradient(90deg, #f6fdfb, #fff);
   border-bottom: 2px solid var(--line);
 }
 .mr-medal {
   width: 34px; height: 34px; flex: 0 0 34px;
-  border-radius: 11px; background: #fff2c9;
+  border-radius: 11px; background: #fdf4da;
   display: grid; place-items: center; font-size: 17px;
 }
 .mr-my { flex: 1; min-width: 0; }
@@ -352,7 +352,7 @@ main { flex: 1; padding: 18px 16px 8px; }
 }
 .mr-my .r em { font-style: normal; color: var(--green-dark); }
 .mr-my .chase {
-  font-size: 11px; font-weight: 800; color: #ff8a00; margin-top: 2px;
+  font-size: 11px; font-weight: 800; color: #ff9f5e; margin-top: 2px;
 }
 .mr-my .chase.lead { color: var(--green-dark); }
 .mr-xp {
@@ -366,7 +366,7 @@ main { flex: 1; padding: 18px 16px 8px; }
   padding: 7px 8px; border-radius: 10px;
   font-size: 13px; font-weight: 800;
 }
-.mr-row.me { background: #eefbe3; }
+.mr-row.me { background: #e6f7f2; }
 .mr-row .n {
   width: 20px; flex: 0 0 20px; text-align: center;
   font-size: 11px; font-weight: 900; color: var(--ink-soft);
@@ -418,16 +418,16 @@ main { flex: 1; padding: 18px 16px 8px; }
   padding: 11px 10px; border-radius: 14px;
   font-weight: 700;
 }
-.rank-row + .rank-row { border-top: 1px solid #f2f2f2; }
-.rank-row.me { background: #eefbe3; box-shadow: 0 0 0 2px var(--green) inset; }
+.rank-row + .rank-row { border-top: 1px solid #eef4f2; }
+.rank-row.me { background: #e6f7f2; box-shadow: 0 0 0 2px var(--green) inset; }
 .rank-badge {
   width: 30px; height: 30px; flex: 0 0 30px;
   border-radius: 10px; display: grid; place-items: center;
-  font-size: 13px; font-weight: 900; background: #f2f2f2; color: var(--ink-soft);
+  font-size: 13px; font-weight: 900; background: #eef4f2; color: var(--ink-soft);
 }
-.rank-row:nth-child(1) .rank-badge { background: #fff2c9; color: #a97b00; }
-.rank-row:nth-child(2) .rank-badge { background: #eef1f4; color: #7b8794; }
-.rank-row:nth-child(3) .rank-badge { background: #fbe8dc; color: #a2652f; }
+.rank-row:nth-child(1) .rank-badge { background: #fdf4da; color: #a6842f; }
+.rank-row:nth-child(2) .rank-badge { background: #eff3f2; color: #93a3a0; }
+.rank-row:nth-child(3) .rank-badge { background: #fbeee6; color: #b08257; }
 .rank-name { flex: 1; font-size: 15px; font-weight: 800; }
 .rank-sub  { font-size: 11px; color: var(--ink-soft); font-weight: 700; }
 .rank-score { font-size: 15px; font-weight: 900; color: var(--green-dark); }
@@ -444,8 +444,8 @@ main { flex: 1; padding: 18px 16px 8px; }
 .stat-box .v { font-size: 23px; font-weight: 900; margin-top: 3px; }
 .stat-box.g .v { color: var(--green-dark); }
 .stat-box.b .v { color: var(--blue-dark); }
-.stat-box.o .v { color: #ff8a00; }
-.stat-box.p .v { color: #a855f7; }
+.stat-box.o .v { color: #ff9f5e; }
+.stat-box.p .v { color: #9b86d6; }
 
 .cal-head {
   display: flex; align-items: center; justify-content: space-between;
@@ -469,14 +469,14 @@ main { flex: 1; padding: 18px 16px 8px; }
   border-radius: 10px;
   display: grid; place-items: center;
   font-size: 12px; font-weight: 800;
-  background: #f4f4f4; color: #bbb;
+  background: #eef5f3; color: #bbb;
   position: relative;
 }
 .cal-cell.empty { background: transparent; }
 .cal-cell.today { box-shadow: 0 0 0 2px var(--blue) inset; }
-.cal-cell.l1 { background: #d9f5c0; color: #4d7a1f; }
-.cal-cell.l2 { background: #aeea86; color: #3d6b12; }
-.cal-cell.l3 { background: #7bd44b; color: #fff; }
+.cal-cell.l1 { background: #d8f3ec; color: #2f7a6a; }
+.cal-cell.l2 { background: #a6e5d6; color: #28675a; }
+.cal-cell.l3 { background: #6fd7bf; color: #fff; }
 .cal-cell.l4 { background: var(--green); color: #fff; }
 .cal-legend {
   display: flex; align-items: center; justify-content: flex-end;
@@ -498,7 +498,7 @@ main { flex: 1; padding: 18px 16px 8px; }
   border: none; background: transparent; cursor: pointer;
   padding: 11px 0 13px; font-family: inherit;
   display: flex; flex-direction: column; align-items: center; gap: 3px;
-  font-size: 10px; font-weight: 900; color: #b8b8b8;
+  font-size: 10px; font-weight: 900; color: #a8bab5;
   transition: color .15s ease;
 }
 .tabbar button .ico { font-size: 21px; filter: grayscale(1) opacity(.5); transition: filter .15s ease; }
@@ -521,7 +521,7 @@ main { flex: 1; padding: 18px 16px 8px; }
 
 <!-- ============================ 로그인 ============================ -->
 <div id="authScreen">
-  <div class="logo-mark">🧠</div>
+  <div class="logo-mark">🌱</div>
   <h1 class="logo-type">CMSmosis</h1>
   <p class="logo-tag">개념이 스며든다 · 중등 수학·과학</p>
 
@@ -653,11 +653,11 @@ main { flex: 1; padding: 18px 16px 8px; }
         <div class="cal-grid" id="calGrid"></div>
         <div class="cal-legend">
           적음
-          <i style="background:#f4f4f4"></i>
-          <i style="background:#d9f5c0"></i>
-          <i style="background:#aeea86"></i>
-          <i style="background:#7bd44b"></i>
-          <i style="background:#58cc02"></i>
+          <i style="background:#eef5f3"></i>
+          <i style="background:#d8f3ec"></i>
+          <i style="background:#a6e5d6"></i>
+          <i style="background:#6fd7bf"></i>
+          <i style="background:#4ecdb0"></i>
           많음
         </div>
       </div>
@@ -761,7 +761,7 @@ function renderMath(el, text) {
       katex.render(part, span, { throwOnError: true, displayMode: false });
     } catch (e) {
       span.textContent = part;   // 변환 실패한 수식은 원문 그대로
-      span.style.color = '#b23a3a';
+      span.style.color = '#cc7070';
     }
     el.appendChild(span);
   });
@@ -796,7 +796,7 @@ function sizeCanvas() { cvs.width = innerWidth; cvs.height = innerHeight; }
 sizeCanvas(); addEventListener('resize', sizeCanvas);
 
 function confetti() {
-  const colors = ['#58cc02', '#1cb0f6', '#ffc800', '#ff4b4b', '#ce82ff'];
+  const colors = ['#4ecdb0', '#5ec5e0', '#f7c948', '#ff8f8f', '#b8a7e0'];
   const cx = innerWidth / 2, cy = innerHeight * 0.4;
   for (let i = 0; i < 80; i++) {
     parts.push({
