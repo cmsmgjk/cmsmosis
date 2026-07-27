@@ -1045,6 +1045,12 @@ function nextCard() {
   micBtn.classList.toggle('hidden', !speakable || !recognition);
   showBtn.textContent = speakable ? '정답 확인' : '정답 보기';
 
+  // 말하기로 채점 가능한 카드는 마이크를 꼭 쓰게 한다 (안 듣고 "정답 확인"
+  // 눌러서 바로 "맞혔어"로 점수를 따는 걸 막는다). 인식 자체가 안 되는
+  // 브라우저에서는 "정답 확인"이 유일한 방법이라 그대로 둔다.
+  const gradableBySpeech = speakable && !!recognition && hasGradingKeywords(current);
+  showBtn.classList.toggle('hidden', gradableBySpeech);
+
   renderMath(cardQuestion, current.question);
   renderMath(answerText, current.answer);
 }
@@ -1340,16 +1346,8 @@ function stopListening() {
   setMicIdle();
 }
 
-micBtn.addEventListener('click', () => {
-  if (!recognition) return;
-
-  if (listening) {          // 두 번째 누름 = 말하기 종료 후 채점
-    try { recognition.stop(); } catch (e) { /* noop */ }
-    setMicIdle();
-    finishSpeaking();
-    return;
-  }
-
+function startListening() {
+  if (!recognition || listening) return;
   transcript = '';
   listening = true;
   micBtn.classList.add('listening');
@@ -1362,6 +1360,19 @@ micBtn.addEventListener('click', () => {
   } catch (e) {
     setMicIdle();
   }
+}
+
+micBtn.addEventListener('click', () => {
+  if (!recognition) return;
+
+  if (listening) {          // 두 번째 누름 = 말하기 종료 후 채점
+    try { recognition.stop(); } catch (e) { /* noop */ }
+    setMicIdle();
+    finishSpeaking();
+    return;
+  }
+
+  startListening();
 });
 
 function hasGradingKeywords(card) {
@@ -1391,11 +1402,12 @@ confirmBtn.addEventListener('click', () => {
   pendingSpeechResult = result.pass;   // "다음 문제"를 눌러야 서버에 저장된다
 });
 
-/* 음성인식이 잘못 들었을 때: 채점 전에 같은 카드를 처음부터 다시 듣는다 */
+/* 음성인식이 잘못 들었을 때: 채점 전에 같은 카드를 처음부터 다시 듣는다 (바로 녹음 시작) */
 retryBtn.addEventListener('click', () => {
   heardText.classList.remove('on');
   heardText.textContent = '';
   setStage(1);
+  startListening();
 });
 
 nextBtn.addEventListener('click', async () => {
