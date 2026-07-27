@@ -13,6 +13,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="CMSmosis" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ============================================================
@@ -255,12 +257,42 @@ main { flex: 1; padding: 18px 16px 8px; }
 }
 .tag-unit  { background: #e8f6ff; color: var(--blue-dark); }
 .tag-stage { background: #fff4d1; color: #8a6100; }
+.tag-mode.speak { background: #e6f9e6; color: #2a7a2a; }
+.tag-mode.write { background: #f0ecff; color: #6b46c1; }
+
+/* ---------- 자동 채점 결과 ---------- */
+.verdict {
+  margin-top: 14px; padding: 13px 15px; border-radius: 14px;
+  font-size: 14px; font-weight: 800; display: none;
+}
+.verdict.on { display: block; animation: fadeUp .22s ease; }
+.verdict.pass { background: #e6f9e6; color: #1e6b1e; }
+.verdict.near { background: #fff6dd; color: #8a5a00; }
+.verdict.fail { background: #ffecec; color: #a33; }
+.verdict .kw {
+  display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px;
+}
+.verdict .kw span {
+  font-size: 11px; font-weight: 800; padding: 4px 9px; border-radius: 999px;
+  background: rgba(255,255,255,.75);
+}
+.verdict .kw span.hit  { color: #1e6b1e; }
+.verdict .kw span.miss { color: #a33; text-decoration: line-through; opacity: .75; }
 
 .fc-question {
   font-size: 20px; font-weight: 800; line-height: 1.55;
   color: var(--ink); flex: 1;
   word-break: keep-all;
 }
+
+/* ---------- 수식(KaTeX) ---------- */
+.katex { font-size: 1.03em; }
+/* KaTeX 기본 폰트에는 한글이 없어서 \text{} 안의 한글이 깨진다 */
+.katex .mord.text, .katex .textrm {
+  font-family: 'Pretendard', 'Malgun Gothic', sans-serif;
+}
+/* 긴 수식이 카드 폭을 밀어내지 않도록 */
+.fc-question, .fc-answer { overflow-x: auto; overflow-y: hidden; }
 
 .fc-heard {
   margin-top: 14px; padding: 11px 14px;
@@ -547,9 +579,11 @@ main { flex: 1; padding: 18px 16px 8px; }
           <div class="fc-meta">
             <span class="tag tag-unit"  id="tagUnit"></span>
             <span class="tag tag-stage" id="tagStage"></span>
+            <span class="tag tag-mode"  id="tagMode"></span>
           </div>
           <div class="fc-question" id="cardQuestion"></div>
           <div class="fc-heard" id="heardText"></div>
+          <div class="verdict" id="verdict"></div>
           <div class="fc-answer" id="cardAnswer">
             <span class="lbl">정답</span>
             <span id="answerText"></span>
@@ -570,6 +604,9 @@ main { flex: 1; padding: 18px 16px 8px; }
       <div class="actions hidden" id="stage2">
         <button class="btn btn-red"   id="wrongBtn">❌ 몰랐어</button>
         <button class="btn btn-green" id="correctBtn">✅ 맞혔어</button>
+      </div>
+      <div class="actions hidden" id="stage3">
+        <button class="btn btn-ghost" id="nextBtn">다음 문제 →</button>
       </div>
 
       <div class="queue-note" id="queueNote"></div>
@@ -683,8 +720,9 @@ const cardSkeleton = $('cardSkeleton'), cardBody = $('cardBody'), doneBody = $('
 const tagUnit = $('tagUnit'), tagStage = $('tagStage');
 const cardQuestion = $('cardQuestion'), answerText = $('answerText'), cardAnswer = $('cardAnswer');
 const heardText = $('heardText'), queueNote = $('queueNote');
-const stage1 = $('stage1'), stage2 = $('stage2');
+const stage1 = $('stage1'), stage2 = $('stage2'), stage3 = $('stage3');
 const micBtn = $('micBtn'), showBtn = $('showBtn'), correctBtn = $('correctBtn'), wrongBtn = $('wrongBtn');
+const nextBtn = $('nextBtn'), tagMode = $('tagMode'), verdictEl = $('verdict');
 
 const rankList = $('rankList');
 const mrMedal = $('mrMedal'), mrRank = $('mrRank'), mrChase = $('mrChase');
@@ -705,6 +743,28 @@ function dateKey(d) {
 }
 function esc(s) {
   return String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+}
+
+/* 카드 본문에는 hwp 교안에서 복구한 수식이 $...$ 로 들어 있다.
+   그 구간만 KaTeX 로 그리고 나머지는 일반 텍스트로 넣는다. */
+function renderMath(el, text) {
+  el.textContent = '';
+  const parts = String(text ?? '').split('$');
+  parts.forEach((part, i) => {
+    if (i % 2 === 0) {
+      if (part) el.appendChild(document.createTextNode(part));
+      return;
+    }
+    // 홀수 번째 조각이 수식
+    const span = document.createElement('span');
+    try {
+      katex.render(part, span, { throwOnError: true, displayMode: false });
+    } catch (e) {
+      span.textContent = part;   // 변환 실패한 수식은 원문 그대로
+      span.style.color = '#b23a3a';
+    }
+    el.appendChild(span);
+  });
 }
 function levelOf(score) { return Math.floor((score || 0) / XP_PER_LEVEL) + 1; }
 
@@ -878,6 +938,54 @@ function renderUnits() {
 function setStage(n) {
   stage1.classList.toggle('hidden', n !== 1);
   stage2.classList.toggle('hidden', n !== 2);
+  stage3.classList.toggle('hidden', n !== 3);
+}
+
+/* ============================================================
+   자동 채점
+   말한 내용에 정답의 핵심 낱말이 얼마나 들어있는지로 판정한다.
+   음성 인식은 띄어쓰기·조사가 들쭉날쭉해서 공백을 지우고 비교한다.
+   ============================================================ */
+const PASS_RATIO = 0.6;   // 핵심 낱말의 60% 이상 → 정답
+
+function normalize(s) {
+  return String(s || '').replace(/\s+/g, '').toLowerCase();
+}
+
+function gradeBySpeech(card, transcript) {
+  const keys = (card.keywords || '').split(',').map(k => k.trim()).filter(Boolean);
+  if (!keys.length) return null;
+
+  const said = normalize(transcript);
+  const hit = keys.filter(k => said.includes(normalize(k)));
+  const ratio = hit.length / keys.length;
+
+  return {
+    keys, hit,
+    miss: keys.filter(k => !hit.includes(k)),
+    ratio,
+    pass: ratio >= PASS_RATIO
+  };
+}
+
+function showVerdict(r) {
+  if (!r) { verdictEl.classList.remove('on'); return; }
+
+  const level = r.pass ? 'pass' : (r.ratio >= 0.3 ? 'near' : 'fail');
+  const head = r.pass
+    ? `잘했어요! 핵심 ${r.keys.length}개 중 ${r.hit.length}개를 말했어요`
+    : (r.ratio >= 0.3
+        ? `조금 더! 핵심 ${r.keys.length}개 중 ${r.hit.length}개만 나왔어요`
+        : `아직이에요. 정답을 보고 다시 말해볼까요?`);
+
+  verdictEl.className = 'verdict on ' + level;
+  verdictEl.innerHTML =
+    esc(head) +
+    '<div class="kw">' +
+    r.keys.map(k =>
+      `<span class="${r.hit.includes(k) ? 'hit' : 'miss'}">${r.hit.includes(k) ? '✓' : '✗'} ${esc(k)}</span>`
+    ).join('') +
+    '</div>';
 }
 
 function nextCard() {
@@ -885,6 +993,8 @@ function nextCard() {
   cardAnswer.classList.remove('on');
   heardText.classList.remove('on');
   heardText.textContent = '';
+  verdictEl.classList.remove('on');
+  stopListening();
 
   if (queue.length === 0) {
     cardBody.classList.add('hidden');
@@ -904,8 +1014,17 @@ function nextCard() {
   const p = getProgress(current);
   tagUnit.textContent = current.unit;
   tagStage.textContent = `단계 ${p.leitner_stage}/5`;
-  cardQuestion.textContent = current.question;
-  answerText.textContent = current.answer;
+
+  const speakable = current.mode !== 'write';
+  tagMode.textContent = speakable ? '🗣 말하기' : '✍️ 필기';
+  tagMode.className = 'tag tag-mode ' + (speakable ? 'speak' : 'write');
+
+  // 필기형은 소리 내어 답할 수 없으니 마이크를 감춘다
+  micBtn.classList.toggle('hidden', !speakable || !recognition);
+  showBtn.textContent = speakable ? '정답 확인' : '정답 보기';
+
+  renderMath(cardQuestion, current.question);
+  renderMath(answerText, current.answer);
 }
 
 showBtn.addEventListener('click', () => {
@@ -913,7 +1032,7 @@ showBtn.addEventListener('click', () => {
   setStage(2);
 });
 
-async function grade(correct) {
+async function grade(correct, advance = true) {
   if (!current || !profile) return;
   const card = current;
   const nowIso = new Date().toISOString();
@@ -938,7 +1057,8 @@ async function grade(correct) {
   }
 
   refreshHud();
-  setTimeout(nextCard, correct ? 620 : 420);
+  // 자동 채점일 때는 채점 결과를 읽을 시간을 주고, 학생이 직접 넘긴다
+  if (advance) setTimeout(nextCard, correct ? 620 : 420);
 
   // 서버 저장
   const tasks = [
@@ -1151,30 +1271,95 @@ document.querySelectorAll('.tabbar button').forEach(btn => {
    음성 인식
    ============================================================ */
 let recognition = null;
+let listening = false;
+let transcript = '';
+
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 if (SR) {
   recognition = new SR();
   recognition.lang = 'ko-KR';
-  recognition.interimResults = false;
+  recognition.continuous = true;      // 말이 잠깐 끊겨도 계속 듣는다
+  recognition.interimResults = true;  // 말하는 중에도 화면에 보여준다
+
   recognition.onresult = e => {
-    heardText.textContent = '🗣️ ' + e.results[0][0].transcript;
+    let fixed = '', tentative = '';
+    for (let i = 0; i < e.results.length; i++) {
+      const txt = e.results[i][0].transcript;
+      if (e.results[i].isFinal) fixed += txt;
+      else tentative += txt;
+    }
+    transcript = (fixed + tentative).trim();
+    heardText.textContent = '🗣️ ' + (transcript || '…');
     heardText.classList.add('on');
   };
-  recognition.onerror = () => {
-    heardText.textContent = '잘 안 들렸어요. 다시 말해볼까요?';
+
+  recognition.onerror = ev => {
+    if (ev.error === 'no-speech') return;   // 잠깐 조용한 건 오류가 아니다
+    heardText.textContent = ev.error === 'not-allowed'
+      ? '마이크 권한이 필요해요. 주소창의 자물쇠에서 허용해주세요.'
+      : '잘 안 들렸어요. 다시 시도해볼까요?';
     heardText.classList.add('on');
-    micBtn.classList.remove('listening');
+    setMicIdle();
   };
-  recognition.onend = () => micBtn.classList.remove('listening');
+
+  recognition.onend = () => { if (listening) setMicIdle(); };
+}
+
+function setMicIdle() {
+  listening = false;
+  micBtn.classList.remove('listening');
+  micBtn.textContent = '🎤 말하기';
+}
+
+function stopListening() {
+  transcript = '';
+  if (!recognition || !listening) { setMicIdle(); return; }
+  try { recognition.stop(); } catch (e) { /* 이미 멈춘 상태 */ }
+  setMicIdle();
 }
 
 micBtn.addEventListener('click', () => {
   if (!recognition) return;
+
+  if (listening) {          // 두 번째 누름 = 말하기 종료 후 채점
+    try { recognition.stop(); } catch (e) { /* noop */ }
+    setMicIdle();
+    finishSpeaking();
+    return;
+  }
+
+  transcript = '';
+  listening = true;
   micBtn.classList.add('listening');
+  micBtn.textContent = '⏹ 말하기 종료';
   heardText.textContent = '듣고 있어요…';
   heardText.classList.add('on');
-  try { recognition.start(); } catch (e) { micBtn.classList.remove('listening'); }
+  verdictEl.classList.remove('on');
+  try {
+    recognition.start();
+  } catch (e) {
+    setMicIdle();
+  }
 });
+
+/* 말하기를 끝내면 앱이 채점한다. 학생이 직접 맞다/틀리다를 고르지 않는다. */
+function finishSpeaking() {
+  if (!current) return;
+
+  const result = gradeBySpeech(current, transcript);
+  if (!result) {              // 채점 기준이 없는 문제
+    cardAnswer.classList.add('on');
+    setStage(2);
+    return;
+  }
+
+  showVerdict(result);
+  cardAnswer.classList.add('on');
+  setStage(3);
+  grade(result.pass, false);
+}
+
+nextBtn.addEventListener('click', nextCard);
 
 if (!SR) {
   micBtn.disabled = true;
