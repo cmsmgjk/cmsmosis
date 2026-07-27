@@ -958,12 +958,27 @@ function normalize(s) {
   return String(s || '').replace(/\s+/g, '').toLowerCase();
 }
 
+/* 뜻이 같은 표현 묶음. 어간(짧은 형태)으로 적어두면 "같다/같음/같은"처럼
+   어미가 달라도, "동일하다/일치하다"처럼 아예 다른 낱말이어도 같이 인정된다. */
+const SYNONYM_GROUPS = [
+  ['같', '동일', '일치', '동등'],
+];
+
+function keyVariants(keyword) {
+  const k = normalize(keyword);
+  const group = SYNONYM_GROUPS.find(g => g.some(w => {
+    const gw = normalize(w);
+    return k.includes(gw) || gw.includes(k);
+  }));
+  return group ? group.map(normalize) : [k];
+}
+
 function gradeBySpeech(card, transcript) {
   const keys = (card.keywords || '').split(',').map(k => k.trim()).filter(Boolean);
   if (!keys.length) return null;
 
   const said = normalize(transcript);
-  const hit = keys.filter(k => said.includes(normalize(k)));
+  const hit = keys.filter(k => keyVariants(k).some(v => said.includes(v)));
   const ratio = hit.length / keys.length;
 
   return {
