@@ -606,6 +606,7 @@ main { flex: 1; padding: 18px 16px 8px; }
         <button class="btn btn-green" id="correctBtn">✅ 맞혔어</button>
       </div>
       <div class="actions hidden" id="stage3">
+        <button class="btn btn-ghost" id="retryBtn">🔁 다시 말하기</button>
         <button class="btn btn-ghost" id="nextBtn">다음 문제 →</button>
       </div>
 
@@ -722,7 +723,8 @@ const cardQuestion = $('cardQuestion'), answerText = $('answerText'), cardAnswer
 const heardText = $('heardText'), queueNote = $('queueNote');
 const stage1 = $('stage1'), stage2 = $('stage2'), stage3 = $('stage3');
 const micBtn = $('micBtn'), showBtn = $('showBtn'), correctBtn = $('correctBtn'), wrongBtn = $('wrongBtn');
-const nextBtn = $('nextBtn'), tagMode = $('tagMode'), verdictEl = $('verdict');
+const nextBtn = $('nextBtn'), retryBtn = $('retryBtn'), tagMode = $('tagMode'), verdictEl = $('verdict');
+let pendingSpeechResult = null;   // 채점은 됐지만 아직 서버에 반영 안 한 말하기 결과 (다시 말하기 대비)
 
 const rankList = $('rankList');
 const mrMedal = $('mrMedal'), mrRank = $('mrRank'), mrChase = $('mrChase');
@@ -989,6 +991,7 @@ function showVerdict(r) {
 }
 
 function nextCard() {
+  pendingSpeechResult = null;
   cardSkeleton.classList.add('hidden');
   cardAnswer.classList.remove('on');
   heardText.classList.remove('on');
@@ -1356,10 +1359,27 @@ function finishSpeaking() {
   showVerdict(result);
   cardAnswer.classList.add('on');
   setStage(3);
-  grade(result.pass, false);
+  pendingSpeechResult = result.pass;   // 다시 말하기 누르면 취소될 수 있어 아직 서버 저장 안 함
 }
 
-nextBtn.addEventListener('click', nextCard);
+/* 음성인식이 잘못 들었을 때: 방금 채점은 취소하고 같은 카드를 다시 듣는다 */
+retryBtn.addEventListener('click', () => {
+  pendingSpeechResult = null;
+  cardAnswer.classList.remove('on');
+  verdictEl.classList.remove('on');
+  heardText.classList.remove('on');
+  heardText.textContent = '';
+  setStage(1);
+});
+
+nextBtn.addEventListener('click', async () => {
+  if (pendingSpeechResult !== null) {
+    const pass = pendingSpeechResult;
+    pendingSpeechResult = null;
+    await grade(pass, false);
+  }
+  nextCard();
+});
 
 if (!SR) {
   micBtn.disabled = true;
