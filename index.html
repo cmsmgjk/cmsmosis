@@ -333,10 +333,10 @@ main { flex: 1; padding: 18px 16px 8px; }
   color: var(--green-dark); margin-bottom: 6px;
 }
 
-.actions { display: flex; gap: 10px; margin-top: 16px; }
-.actions .btn { flex: 1; min-width: 0; }
+.actions { display: flex; gap: 8px; margin-top: 16px; }
+.actions .btn { flex: 1; min-width: 0; padding-left: 8px; padding-right: 8px; font-size: 14px; }
 /* 말하는 중에는 버튼 글자가 길어져서 살짝 줄인다 */
-.btn-mic.listening { font-size: 14px; padding-left: 10px; padding-right: 10px; }
+.btn-mic.listening { font-size: 13px; }
 
 /* 마이크 듣는 중 */
 .btn-mic.listening { background: var(--red); box-shadow: 0 4px 0 var(--red-dark); animation: pulse 1s infinite; }
@@ -659,6 +659,7 @@ main { flex: 1; padding: 18px 16px 8px; }
 
       <div class="actions" id="stage1">
         <button class="btn btn-blue btn-mic" id="micBtn">🎤 말하기</button>
+        <button class="btn btn-yellow" id="typeBtn">⌨️ 타이핑</button>
         <button class="btn btn-green" id="showBtn">정답 확인</button>
         <button class="btn btn-ghost hidden" id="retryBtn">🔁 다시 말하기</button>
       </div>
@@ -750,6 +751,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
    ============================================================ */
 const STAGE_INTERVAL_DAYS = { 1: 0, 2: 2, 3: 7, 4: 14, 5: 30 };
 const XP_PER_CORRECT = 10;
+const XP_TYPED = 5;        // 말 못 하는 상황용. 말하기의 절반만 준다.
 const DAILY_GOAL = 20;
 const XP_PER_LEVEL = 100;
 
@@ -828,13 +830,14 @@ const cardSkeleton = $('cardSkeleton'), cardBody = $('cardBody'), doneBody = $('
 const tagUnit = $('tagUnit'), tagStage = $('tagStage');
 const cardQuestion = $('cardQuestion'), answerText = $('answerText'), cardAnswer = $('cardAnswer');
 const heardText = $('heardText'), queueNote = $('queueNote');
-const editBtn = $('editBtn'), heardInput = $('heardInput');
+const editBtn = $('editBtn'), heardInput = $('heardInput'), typeBtn = $('typeBtn');
 const stage1 = $('stage1'), stage3 = $('stage3');
 const micBtn = $('micBtn'), showBtn = $('showBtn');
 const nextBtn = $('nextBtn'), retryBtn = $('retryBtn'), tagMode = $('tagMode'), verdictEl = $('verdict');
 let restartWanted = false;   // "다시 말하기" 를 눌러 인식기를 껐다 켜는 중인지
-let editing = false;         // 인식된 내용을 직접 고치는 중인지
-let wasEdited = false;       // 이번 답을 손으로 고쳤는지 (채점 결과에 표시)
+let editing = false;         // 입력칸이 열려 있는지 (직접 고치기 / 타이핑)
+let wasEdited = false;       // 인식된 내용을 손으로 고쳤는지 (채점 결과에 표시)
+let spokeThisCard = false;   // 이 카드에서 마이크로 말했는지 → XP가 갈린다
 
 const rankList = $('rankList');
 const hallList = $('hallList'), leagueTitle = $('leagueTitle'), leagueDesc = $('leagueDesc');
@@ -1144,8 +1147,9 @@ function gradeBySpeech(card, transcript) {
   };
 }
 
-function showVerdict(r, edited = false) {
+function showVerdict(r, opts = {}) {
   if (!r) { verdictEl.classList.remove('on'); return; }
+  const { edited = false, spoke = true, xp = XP_PER_CORRECT } = opts;
 
   const level = r.pass ? 'pass' : (r.ratio >= 0.3 ? 'near' : 'fail');
   const head = r.pass
@@ -1162,7 +1166,10 @@ function showVerdict(r, edited = false) {
       `<span class="${r.hit.includes(k) ? 'hit' : 'miss'}">${r.hit.includes(k) ? '✓' : '✗'} ${esc(k)}</span>`
     ).join('') +
     '</div>' +
-    (edited ? '<div class="edited-note">✏️ 직접 고친 내용으로 채점했어요</div>' : '');
+    (edited ? '<div class="edited-note">✏️ 직접 고친 내용으로 채점했어요</div>' : '') +
+    (!spoke
+      ? `<div class="edited-note">⌨️ 타이핑으로 답해서 ${xp} XP예요. 소리 내어 말하면 ${XP_PER_CORRECT} XP!</div>`
+      : '');
 }
 
 function nextCard() {
@@ -1172,6 +1179,7 @@ function nextCard() {
   heardText.textContent = '';
   heardInput.value = '';
   wasEdited = false;
+  spokeThisCard = false;
   verdictEl.classList.remove('on');
   stopListening();
 
@@ -1214,7 +1222,7 @@ showBtn.addEventListener('click', () => {
   setStage(3);
 });
 
-async function grade(correct, advance = true) {
+async function grade(correct, advance = true, xpGain = XP_PER_CORRECT, spoke = true) {
   if (!current || !profile) return;
   const card = current;
   const nowIso = new Date().toISOString();
@@ -1229,9 +1237,10 @@ async function grade(correct, advance = true) {
   if (correct) {
     flashcard.classList.add('pop');
     setTimeout(() => flashcard.classList.remove('pop'), 400);
-    soundCorrect(); confetti(); showXpPop(XP_PER_CORRECT);
-    profile.score += XP_PER_CORRECT;
-    profile.season_score = (profile.season_score || 0) + XP_PER_CORRECT;
+    soundCorrect(); confetti();
+    showXpPop(xpGain, spoke ? '정답!' : '정답! ⌨️ 타이핑');
+    profile.score += xpGain;
+    profile.season_score = (profile.season_score || 0) + xpGain;
     profile.correct_count += 1;
   } else {
     flashcard.classList.add('shake');
@@ -1536,6 +1545,7 @@ if (SR) {
     }
     if (editing) return;              // 고치는 중에는 입력칸을 건드리지 않는다
     transcript = (fixed + tentative).trim();
+    if (transcript) spokeThisCard = true;   // 실제로 말했다 → 10 XP 자격
     heardText.textContent = '🗣️ ' + (transcript || '…');
     heardText.classList.add('on');
     offerEdit();
@@ -1559,14 +1569,16 @@ if (SR) {
   };
 }
 
-/* 버튼 구성은 (말하는 중 / 고치는 중 / 대기) 세 상태로만 갈린다 */
+/* 버튼 구성은 (말하는 중 / 입력칸 열림 / 대기) 세 상태로만 갈린다 */
 function renderControls() {
   micBtn.classList.toggle('listening', listening && !editing);
-  micBtn.textContent = editing ? '✅ 이대로 채점'
+  micBtn.textContent = editing ? '✅ 채점하기'
                      : listening ? '⏹ 말하기 종료 / 채점'
                      : '🎤 말하기';
-  // "다시 말하기"는 말하는 중이거나 고치는 중일 때만
+  // 말한 적 없이 타이핑만 하는 중이면 "다시 말하기" 대신 "취소"
+  retryBtn.textContent = (editing && !spokeThisCard) ? '✕ 취소' : '🔁 다시 말하기';
   retryBtn.classList.toggle('hidden', !listening && !editing);
+  typeBtn.classList.toggle('hidden', listening || editing);
   showBtn.classList.toggle('hidden', listening || editing);
 }
 
@@ -1599,6 +1611,7 @@ function startListening() {
   if (!recognition || listening) return;
   transcript = '';
   wasEdited = false;
+  heardInput.value = '';
   closeEdit();
   listening = true;
   renderControls();
@@ -1627,24 +1640,37 @@ micBtn.addEventListener('click', () => {
   startListening();
 });
 
-/* ---------- 발음이 계속 잘못 잡힐 때: 들린 내용을 직접 고친다 ----------
-   정답을 보기 전에만 열리고, 말한 게 있어야 열린다.
-   그래서 "말 안 하고 답만 타이핑" 하는 길은 여전히 막혀 있다. */
-editBtn.addEventListener('click', () => {
-  if (!transcript.trim()) return;
-
+/* 입력칸을 연다. preset 이 있으면 그 내용으로 채워서 고치게 한다. */
+function openInput(preset) {
   restartWanted = false;
   if (listening && recognition) { try { recognition.abort(); } catch (e) { /* noop */ } }
   listening = false;
   editing = true;
-  wasEdited = true;
 
   editBtn.classList.remove('on');
-  heardInput.value = transcript.replace(/^🗣️\s*/, '');
+  heardInput.value = preset;
   heardInput.classList.add('on');
   renderControls();
   heardInput.focus();
   heardInput.select();
+}
+
+/* ---------- 발음이 계속 잘못 잡힐 때: 들린 내용을 직접 고친다 ----------
+   말한 게 있어야 열리고, 정답을 보기 전에만 열린다.
+   말하기를 거친 것이므로 XP는 그대로 10점이다. */
+editBtn.addEventListener('click', () => {
+  if (!transcript.trim()) return;
+  wasEdited = true;
+  openInput(transcript.replace(/^🗣️\s*/, ''));
+});
+
+/* ---------- 말할 수 없는 상황: 타이핑으로 답하기 (XP 절반) ---------- */
+typeBtn.addEventListener('click', () => {
+  transcript = '';
+  wasEdited = false;
+  heardText.textContent = '⌨️ 타이핑으로 답하는 중이에요';
+  heardText.classList.add('on');
+  openInput('');
 });
 
 heardInput.addEventListener('input', () => { transcript = heardInput.value; });
@@ -1664,23 +1690,36 @@ function finishSpeaking() {
 
   const said = transcript;
   const edited = wasEdited;
+  const spoke = spokeThisCard;                     // 말했으면 10 XP, 타이핑만 했으면 5 XP
+  const xp = spoke ? XP_PER_CORRECT : XP_TYPED;
 
   closeEdit();
   setMicIdle();
 
-  if (edited) heardText.textContent = '🗣️ ' + said;
+  if (said) heardText.textContent = (spoke ? '🗣️ ' : '⌨️ ') + said;
   cardAnswer.classList.add('on');
   setStage(3);
 
   if (!hasGradingKeywords(current)) return;   // 채점 기준이 없는 문제 → 정답만
 
   const result = gradeBySpeech(current, said);
-  showVerdict(result, edited);
-  grade(result.pass, false);
+  showVerdict(result, { edited, spoke, xp });
+  grade(result.pass, false, xp, spoke);
 }
 
-/* 말하는 도중 언제든: 지금까지 들은 걸 버리고 처음부터 다시 듣는다 */
+/* 말하는 도중 언제든: 지금까지 들은 걸 버리고 처음부터 다시 듣는다.
+   말한 적 없이 타이핑만 하던 중이면 "취소" 로 동작한다. */
 retryBtn.addEventListener('click', () => {
+  if (editing && !spokeThisCard) {      // ✕ 취소 → 처음 상태로
+    transcript = '';
+    heardInput.value = '';
+    closeEdit();
+    heardText.classList.remove('on');
+    heardText.textContent = '';
+    renderControls();
+    return;
+  }
+
   if (!recognition) return;
   transcript = '';
   heardText.textContent = '듣고 있어요…';
