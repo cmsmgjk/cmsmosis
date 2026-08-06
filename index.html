@@ -303,6 +303,24 @@ main { flex: 1; padding: 18px 16px 8px; }
 }
 .fc-heard.on { display: block; }
 
+/* 발음이 계속 잘못 잡힐 때 직접 고치기 */
+.heard-fix {
+  display: none; margin-top: 8px; padding: 6px 2px;
+  border: none; background: none; cursor: pointer;
+  font-family: inherit; font-size: 12px; font-weight: 700;
+  color: var(--ink-soft); text-decoration: underline;
+}
+.heard-fix.on { display: block; }
+.heard-input {
+  display: none; width: 100%; box-sizing: border-box; margin-top: 12px;
+  padding: 11px 14px; border: 2px solid var(--blue); border-radius: 12px;
+  font-family: inherit; font-size: 14px; font-weight: 700; color: var(--ink);
+  background: #fff;
+}
+.heard-input.on { display: block; }
+.heard-input:focus { outline: none; border-color: var(--green); }
+.edited-note { margin-top: 6px; font-size: 11px; font-weight: 700; color: var(--ink-soft); }
+
 .fc-answer {
   margin-top: 16px; padding-top: 16px;
   border-top: 2px dashed var(--line);
@@ -621,6 +639,10 @@ main { flex: 1; padding: 18px 16px 8px; }
           </div>
           <div class="fc-question" id="cardQuestion"></div>
           <div class="fc-heard" id="heardText"></div>
+          <button class="heard-fix" id="editBtn">✏️ 잘못 들렸어요 · 직접 고치기</button>
+          <input class="heard-input" id="heardInput" type="text"
+                 autocomplete="off" autocorrect="off" spellcheck="false"
+                 placeholder="말한 내용을 그대로 적어주세요">
           <div class="verdict" id="verdict"></div>
           <div class="fc-answer" id="cardAnswer">
             <span class="lbl">정답</span>
@@ -806,10 +828,13 @@ const cardSkeleton = $('cardSkeleton'), cardBody = $('cardBody'), doneBody = $('
 const tagUnit = $('tagUnit'), tagStage = $('tagStage');
 const cardQuestion = $('cardQuestion'), answerText = $('answerText'), cardAnswer = $('cardAnswer');
 const heardText = $('heardText'), queueNote = $('queueNote');
+const editBtn = $('editBtn'), heardInput = $('heardInput');
 const stage1 = $('stage1'), stage3 = $('stage3');
 const micBtn = $('micBtn'), showBtn = $('showBtn');
 const nextBtn = $('nextBtn'), retryBtn = $('retryBtn'), tagMode = $('tagMode'), verdictEl = $('verdict');
 let restartWanted = false;   // "다시 말하기" 를 눌러 인식기를 껐다 켜는 중인지
+let editing = false;         // 인식된 내용을 직접 고치는 중인지
+let wasEdited = false;       // 이번 답을 손으로 고쳤는지 (채점 결과에 표시)
 
 const rankList = $('rankList');
 const hallList = $('hallList'), leagueTitle = $('leagueTitle'), leagueDesc = $('leagueDesc');
@@ -1119,7 +1144,7 @@ function gradeBySpeech(card, transcript) {
   };
 }
 
-function showVerdict(r) {
+function showVerdict(r, edited = false) {
   if (!r) { verdictEl.classList.remove('on'); return; }
 
   const level = r.pass ? 'pass' : (r.ratio >= 0.3 ? 'near' : 'fail');
@@ -1136,7 +1161,8 @@ function showVerdict(r) {
     r.keys.map(k =>
       `<span class="${r.hit.includes(k) ? 'hit' : 'miss'}">${r.hit.includes(k) ? '✓' : '✗'} ${esc(k)}</span>`
     ).join('') +
-    '</div>';
+    '</div>' +
+    (edited ? '<div class="edited-note">✏️ 직접 고친 내용으로 채점했어요</div>' : '');
 }
 
 function nextCard() {
@@ -1144,6 +1170,8 @@ function nextCard() {
   cardAnswer.classList.remove('on');
   heardText.classList.remove('on');
   heardText.textContent = '';
+  heardInput.value = '';
+  wasEdited = false;
   verdictEl.classList.remove('on');
   stopListening();
 
@@ -1506,9 +1534,11 @@ if (SR) {
       if (e.results[i].isFinal) fixed += txt;
       else tentative += txt;
     }
+    if (editing) return;              // 고치는 중에는 입력칸을 건드리지 않는다
     transcript = (fixed + tentative).trim();
     heardText.textContent = '🗣️ ' + (transcript || '…');
     heardText.classList.add('on');
+    offerEdit();
   };
 
   recognition.onerror = ev => {
@@ -1529,17 +1559,37 @@ if (SR) {
   };
 }
 
+/* 버튼 구성은 (말하는 중 / 고치는 중 / 대기) 세 상태로만 갈린다 */
+function renderControls() {
+  micBtn.classList.toggle('listening', listening && !editing);
+  micBtn.textContent = editing ? '✅ 이대로 채점'
+                     : listening ? '⏹ 말하기 종료 / 채점'
+                     : '🎤 말하기';
+  // "다시 말하기"는 말하는 중이거나 고치는 중일 때만
+  retryBtn.classList.toggle('hidden', !listening && !editing);
+  showBtn.classList.toggle('hidden', listening || editing);
+}
+
 function setMicIdle() {
   listening = false;
-  micBtn.classList.remove('listening');
-  micBtn.textContent = '🎤 말하기';
-  retryBtn.classList.add('hidden');     // 말하는 중에만 보인다
-  showBtn.classList.remove('hidden');
+  renderControls();
+}
+
+/* 말한 게 있어야 고치기를 제안한다 (한마디도 안 하고 타이핑만 하는 걸 막는다) */
+function offerEdit() {
+  editBtn.classList.toggle('on', !editing && listening && !!transcript.trim());
+}
+
+function closeEdit() {
+  editing = false;
+  heardInput.classList.remove('on');
+  editBtn.classList.remove('on');
 }
 
 function stopListening() {
   transcript = '';
   restartWanted = false;
+  closeEdit();
   if (!recognition || !listening) { setMicIdle(); return; }
   try { recognition.stop(); } catch (e) { /* 이미 멈춘 상태 */ }
   setMicIdle();
@@ -1548,11 +1598,10 @@ function stopListening() {
 function startListening() {
   if (!recognition || listening) return;
   transcript = '';
+  wasEdited = false;
+  closeEdit();
   listening = true;
-  micBtn.classList.add('listening');
-  micBtn.textContent = '⏹ 말하기 종료 / 채점';
-  retryBtn.classList.remove('hidden');  // 말하는 도중 언제든 다시 시작할 수 있게
-  showBtn.classList.add('hidden');
+  renderControls();
   heardText.textContent = '듣고 있어요…';
   heardText.classList.add('on');
   verdictEl.classList.remove('on');
@@ -1564,6 +1613,7 @@ function startListening() {
 }
 
 micBtn.addEventListener('click', () => {
+  if (editing) { finishSpeaking(); return; }   // 고친 내용으로 채점
   if (!recognition) return;
 
   if (listening) {          // 두 번째 누름 = 말하기 종료 → 바로 채점
@@ -1577,23 +1627,55 @@ micBtn.addEventListener('click', () => {
   startListening();
 });
 
+/* ---------- 발음이 계속 잘못 잡힐 때: 들린 내용을 직접 고친다 ----------
+   정답을 보기 전에만 열리고, 말한 게 있어야 열린다.
+   그래서 "말 안 하고 답만 타이핑" 하는 길은 여전히 막혀 있다. */
+editBtn.addEventListener('click', () => {
+  if (!transcript.trim()) return;
+
+  restartWanted = false;
+  if (listening && recognition) { try { recognition.abort(); } catch (e) { /* noop */ } }
+  listening = false;
+  editing = true;
+  wasEdited = true;
+
+  editBtn.classList.remove('on');
+  heardInput.value = transcript.replace(/^🗣️\s*/, '');
+  heardInput.classList.add('on');
+  renderControls();
+  heardInput.focus();
+  heardInput.select();
+});
+
+heardInput.addEventListener('input', () => { transcript = heardInput.value; });
+heardInput.addEventListener('keydown', ev => {
+  if (ev.key === 'Enter') { ev.preventDefault(); finishSpeaking(); }
+});
+
 function hasGradingKeywords(card) {
   return (card.keywords || '').split(',').map(k => k.trim()).filter(Boolean).length > 0;
 }
 
 /* 말하기를 끝내면 바로 채점하고 정답을 편다.
-   잘못 들었으면 말하는 도중에 "다시 말하기"로 고칠 수 있다
-   (인식된 내용이 화면에 실시간으로 보인다). */
+   잘못 들었으면 채점 전에 "다시 말하기"로 다시 하거나,
+   그래도 안 잡히면 "직접 고치기"로 손봐서 낼 수 있다. */
 function finishSpeaking() {
   if (!current) return;
 
+  const said = transcript;
+  const edited = wasEdited;
+
+  closeEdit();
+  setMicIdle();
+
+  if (edited) heardText.textContent = '🗣️ ' + said;
   cardAnswer.classList.add('on');
   setStage(3);
 
   if (!hasGradingKeywords(current)) return;   // 채점 기준이 없는 문제 → 정답만
 
-  const result = gradeBySpeech(current, transcript);
-  showVerdict(result);
+  const result = gradeBySpeech(current, said);
+  showVerdict(result, edited);
   grade(result.pass, false);
 }
 
