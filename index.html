@@ -150,12 +150,7 @@ body {
   font-size: 13px; font-weight: 700; text-align: center;
   margin-top: 14px; min-height: 18px;
 }
-.link-btn {
-  display: block; margin: 14px auto 0; padding: 4px 6px;
-  border: none; background: none; cursor: pointer;
-  font-family: inherit; font-size: 13px; font-weight: 700;
-  color: var(--ink-soft); text-decoration: underline;
-}
+.auth-hint { margin: 14px 0 0; text-align: center; font-size: 12px; font-weight: 600; color: var(--ink-soft); }
 .auth-msg.err  { color: var(--red); }
 .auth-msg.ok   { color: var(--green-dark); }
 
@@ -678,6 +673,16 @@ main { flex: 1; padding: 18px 16px 8px; }
   opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease; z-index: 110;
 }
 .toast.on { opacity: 1; transform: translate(-50%, 0); }
+.adm-search {
+  width: 100%; padding: 10px 12px; margin-bottom: 8px; border: 2px solid var(--line); border-radius: 12px;
+  font-family: inherit; font-size: 14px; font-weight: 600; background: #fbfefd; outline: none;
+}
+.stu-row { display: flex; align-items: center; gap: 8px; padding: 9px 2px; border-top: 1px solid #eef4f2; }
+.stu-row:first-child { border-top: none; }
+.stu-row .sr-main { flex: 1; min-width: 0; }
+.stu-row .sr-name { font-size: 14px; font-weight: 800; }
+.stu-row .sr-sub { font-size: 11px; font-weight: 700; color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pw-field { width: 100%; padding: 12px 14px; margin-bottom: 8px; border: 2px solid var(--line); border-radius: 12px; font-family: inherit; font-size: 15px; }
 .promo-text {
   width: 100%; min-height: 150px; padding: 12px; border: 2px solid var(--line); border-radius: 12px;
   font-family: inherit; font-size: 13px; line-height: 1.6; background: #fbfefd; resize: vertical;
@@ -710,25 +715,10 @@ main { flex: 1; padding: 18px 16px 8px; }
       <button class="btn btn-green btn-wide" id="loginBtn">로그인</button>
       <button class="btn btn-ghost btn-wide" id="signupBtn">처음이에요 · 회원가입</button>
     </div>
-    <button class="link-btn" id="forgotBtn">비밀번호를 잊었어요</button>
+    <p class="auth-hint">비밀번호를 잊었으면 선생님께 초기화를 부탁하세요.</p>
     <div class="auth-msg" id="authMsg"></div>
   </div>
 
-  <!-- 메일의 링크를 눌러 돌아왔을 때: 새 비밀번호 정하기 -->
-  <div class="auth-card hidden" id="recoverCard">
-    <div class="field">
-      <label for="newPw1">새 비밀번호</label>
-      <input type="password" id="newPw1" placeholder="6자 이상" autocomplete="new-password" />
-    </div>
-    <div class="field">
-      <label for="newPw2">한 번 더</label>
-      <input type="password" id="newPw2" placeholder="같은 비밀번호" autocomplete="new-password" />
-    </div>
-    <div class="auth-actions">
-      <button class="btn btn-green btn-wide" id="recoverBtn">새 비밀번호로 바꾸기</button>
-    </div>
-    <div class="auth-msg" id="recoverMsg"></div>
-  </div>
 </div>
 
 <!-- ============================ 앱 ============================ -->
@@ -862,6 +852,13 @@ main { flex: 1; padding: 18px 16px 8px; }
       </div>
 
       <div class="panel">
+        <h2>학생 계정</h2>
+        <div class="desc">비밀번호를 잊은 학생은 여기서 임시 비밀번호로 초기화해 주세요. 학생은 로그인한 뒤 '내 기록'에서 새 비밀번호로 바꿀 수 있어요.</div>
+        <input class="adm-search" id="stuSearch" placeholder="이름이나 이메일로 찾기" />
+        <div id="stuList"><div class="skeleton">불러오는 중…</div></div>
+      </div>
+
+      <div class="panel">
         <h2>홍보 문구</h2>
         <div class="desc">단톡방이나 문자에 붙여 넣으세요. 링크를 보내면 미리보기 그림이 같이 떠요.</div>
         <textarea class="promo-text" id="promoText" readonly></textarea>
@@ -897,6 +894,7 @@ main { flex: 1; padding: 18px 16px 8px; }
           많음
         </div>
       </div>
+      <button class="btn btn-ghost btn-wide btn-sm" id="pwChangeBtn">비밀번호 바꾸기</button>
     </section>
   </main>
 
@@ -1159,56 +1157,6 @@ loginBtn.addEventListener('click', async () => {
 });
 
 passwordInput.addEventListener('keydown', e => { if (e.key === 'Enter') loginBtn.click(); });
-
-/* ---------- 비밀번호 찾기 ----------
-   적은 이메일로 비밀번호를 다시 정하는 링크를 보낸다.
-   링크를 누르면 이 앱으로 돌아오고, 새 비밀번호를 정하는 칸이 뜬다. */
-$('forgotBtn').addEventListener('click', async () => {
-  const email = emailInput.value.trim();
-  if (!email) { emailInput.focus(); return setMsg('위 칸에 가입한 이메일을 적고 다시 눌러주세요.', 'err'); }
-  setMsg('메일 보내는 중…');
-  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: APP_URL });
-  if (error) {
-    return setMsg(/rate|limit|seconds/i.test(error.message)
-      ? '잠시 후에 다시 시도해주세요. (메일은 짧은 시간에 여러 번 보낼 수 없어요)'
-      : '메일을 보내지 못했어요: ' + error.message, 'err');
-  }
-  setMsg('메일을 보냈어요. 메일의 링크를 누르면 새 비밀번호를 정할 수 있어요. 몇 분이 지나도 안 오면 스팸함을 보거나 선생님께 말해주세요.', 'ok');
-});
-
-const recoverCard = $('recoverCard'), recoverMsg = $('recoverMsg');
-function showRecover() {
-  document.querySelector('#authScreen .auth-card').classList.add('hidden');
-  recoverCard.classList.remove('hidden');
-  app.classList.add('hidden');
-  authScreen.classList.remove('hidden');
-  $('newPw1').focus();
-}
-function recoverSay(text, kind) {
-  recoverMsg.textContent = text;
-  recoverMsg.className = 'auth-msg' + (kind ? ' ' + kind : '');
-}
-
-$('recoverBtn').addEventListener('click', async () => {
-  const a = $('newPw1').value, b = $('newPw2').value;
-  if (a.length < 6) return recoverSay('비밀번호는 6자 이상이어야 해요.', 'err');
-  if (a !== b) return recoverSay('두 칸의 비밀번호가 달라요.', 'err');
-  recoverSay('바꾸는 중…');
-  const { error } = await sb.auth.updateUser({ password: a });
-  if (error) return recoverSay('바꾸지 못했어요: ' + error.message, 'err');
-  recoverSay('');
-  history.replaceState(null, '', location.pathname);   // 주소창의 일회용 링크 정보 지우기
-  recoverCard.classList.add('hidden');
-  document.querySelector('#authScreen .auth-card').classList.remove('hidden');
-  showToast('비밀번호를 바꿨어요.');
-  await startApp();
-});
-$('newPw2').addEventListener('keydown', e => { if (e.key === 'Enter') $('recoverBtn').click(); });
-
-// 메일 링크로 돌아오면 Supabase 가 이 이벤트를 준다
-sb.auth.onAuthStateChange(event => {
-  if (event === 'PASSWORD_RECOVERY') showRecover();
-});
 
 logoutBtn.addEventListener('click', async () => {
   await sb.auth.signOut();
@@ -2132,6 +2080,7 @@ admSave.addEventListener('click', async () => {
 
 async function loadAdmin() {
   if (!profile?.is_admin) return;
+  loadStudents();
   promoText.value = promoMessage();
 
   const { data: seasons, error } = await sb.from('seasons').select('*').order('starts_on', { ascending: false }).limit(30);
@@ -2218,6 +2167,81 @@ async function loadAdmin() {
     });
   });
 }
+
+/* ============================================================
+   비밀번호 (메일 없이)
+   - 선생님: 관리 탭에서 학생 비밀번호를 임시 비밀번호로 초기화
+   - 학생: 로그인한 뒤 '내 기록' 탭에서 새 비밀번호로 바꾸기
+   ============================================================ */
+let students = [];
+
+function fmtDay(ts) {
+  if (!ts) return '학습 기록 없음';
+  const k = kstDateKey(new Date(ts));
+  return '마지막 학습 ' + shortDate(k);
+}
+
+function renderStudents() {
+  const box = $('stuList');
+  const q = $('stuSearch').value.trim().toLowerCase();
+  const list = students.filter(s => !q || (s.name || '').toLowerCase().includes(q) || (s.email || '').toLowerCase().includes(q));
+  if (!list.length) { box.innerHTML = '<div class="skeleton">찾는 학생이 없어요.</div>'; return; }
+  box.innerHTML = list.map(s => `
+    <div class="stu-row" data-id="${esc(s.user_id)}">
+      <div class="sr-main">
+        <div class="sr-name">${esc(s.name)}${s.is_admin ? ' · 선생님' : ''}</div>
+        <div class="sr-sub">${esc(s.email)} · ${(s.score || 0).toLocaleString()} XP · ${esc(fmtDay(s.last_study))}</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" data-act="reset">비밀번호 초기화</button>
+    </div>`).join('');
+  box.querySelectorAll('button[data-act="reset"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const s = students.find(x => x.user_id === btn.closest('.stu-row').dataset.id);
+      openModal(`${s.name} 비밀번호 초기화`,
+        `<p style="font-size:13px;font-weight:600;color:#555;margin:0 0 10px">임시 비밀번호를 정해 주세요 (6자 이상). 학생에게 알려 주면 그걸로 로그인한 뒤 새 비밀번호로 바꿀 수 있어요.</p>
+         <input class="pw-field" id="tmpPw" type="text" autocomplete="off" placeholder="임시 비밀번호" />`,
+        [
+          { label: '취소', cls: 'btn-ghost' },
+          { label: '초기화', cls: 'btn-green', onClick: async () => {
+              const pw = $('tmpPw').value.trim();
+              if (pw.length < 6) return showToast('비밀번호는 6자 이상이어야 해요.');
+              const { error } = await sb.rpc('admin_reset_password', { p_user_id: s.user_id, p_password: pw });
+              showToast(error ? error.message : `${s.name} 학생의 비밀번호를 초기화했어요.`);
+          } }
+        ]);
+      setTimeout(() => $('tmpPw')?.focus(), 50);
+    });
+  });
+}
+
+async function loadStudents() {
+  const box = $('stuList');
+  const { data, error } = await sb.rpc('admin_list_students');
+  if (error) {
+    box.innerHTML = `<div class="skeleton">학생 목록을 불러올 수 없어요. supabase_password_v1.sql 을 먼저 실행해 주세요.<br>(${esc(error.message)})</div>`;
+    return;
+  }
+  students = data || [];
+  renderStudents();
+}
+$('stuSearch').addEventListener('input', renderStudents);
+
+$('pwChangeBtn').addEventListener('click', () => {
+  openModal('비밀번호 바꾸기',
+    `<input class="pw-field" id="pwNew1" type="password" autocomplete="new-password" placeholder="새 비밀번호 (6자 이상)" />
+     <input class="pw-field" id="pwNew2" type="password" autocomplete="new-password" placeholder="한 번 더" />`,
+    [
+      { label: '취소', cls: 'btn-ghost' },
+      { label: '바꾸기', cls: 'btn-green', onClick: async () => {
+          const a = $('pwNew1').value, b = $('pwNew2').value;
+          if (a.length < 6) return showToast('비밀번호는 6자 이상이어야 해요.');
+          if (a !== b) return showToast('두 칸의 비밀번호가 달라요.');
+          const { error } = await sb.auth.updateUser({ password: a });
+          showToast(error ? '바꾸지 못했어요: ' + error.message : '비밀번호를 바꿨어요.');
+      } }
+    ]);
+  setTimeout(() => $('pwNew1')?.focus(), 50);
+});
 
 $('promoCopy').addEventListener('click', async () => {
   showToast(await copyText(promoText.value) ? '복사했어요.' : '복사하지 못했어요.');
@@ -2682,16 +2706,7 @@ async function startApp(fallbackName) {
 }
 
 (async function boot() {
-  const hash = location.hash || '';
-  if (/error_description=/.test(hash)) {          // 링크가 만료됐거나 이미 쓴 경우
-    const m = decodeURIComponent((hash.match(/error_description=([^&]+)/) || [])[1] || '').replace(/\+/g, ' ');
-    history.replaceState(null, '', location.pathname);
-    setMsg('링크가 만료됐어요. 비밀번호 찾기를 다시 눌러주세요. (' + m + ')', 'err');
-    return;
-  }
-  const recovering = /type=recovery/.test(hash);
   const { data: { session } } = await sb.auth.getSession();
-  if (recovering) { showRecover(); return; }
   if (session) await startApp();
 })();
 </script>
