@@ -1596,10 +1596,17 @@ function nextCard() {
 
 /* 정답 확인은 그냥 답을 보여주기만 한다. 점수·기록은 없다.
    (예전엔 여기서 "맞혔어"를 눌러 말하기 없이 XP를 딸 수 있었다) */
+/* 정답 확인 = "몰랐어요"로 기록한다 (0점, 오늘 푼 문제에 들어가고 이 카드는 1단계로 돌아가 곧 다시 나온다).
+   채점 키워드가 없는 카드는 말로 채점할 방법이 없으니 기록하지 않고 답만 보여준다. */
 showBtn.addEventListener('click', () => {
   stopListening();
   cardAnswer.classList.add('on');
   setStage(3);
+  if (current && hasGradingKeywords(current) && !practiceMode) {
+    verdictEl.className = 'verdict on near';
+    verdictEl.textContent = '정답을 먼저 봤어요. 이 카드는 곧 다시 나와요. (0점)';
+    grade(false, false, 0, false, { quiet: true });
+  }
 });
 
 /* 받침에 따라 조사를 고른다: josa('치킨', '을', '를') → '치킨을' */
@@ -1618,7 +1625,8 @@ function showLimitNote() {
   limitNote.classList.toggle('hidden', !practiceMode);
 }
 
-function cardFeedback(correct) {
+function cardFeedback(correct, quiet = false) {
+  if (quiet) return;            // 정답 확인: 틀렸다고 흔들거나 소리 내지 않는다
   flashcard.classList.add(correct ? 'pop' : 'shake');
   setTimeout(() => flashcard.classList.remove('pop', 'shake'), 400);
   if (correct) soundCorrect(); else soundWrong();
@@ -1626,14 +1634,15 @@ function cardFeedback(correct) {
 
 /* 채점 결과를 서버(record_answer)에 저장한다. 점수는 서버가 올린다.
    화면은 먼저 반응하고, 서버가 거절하면 되돌린다. */
-async function grade(correct, advance = true, xpGain = XP_PER_CORRECT, spoke = true) {
+async function grade(correct, advance = true, xpGain = XP_PER_CORRECT, spoke = true, opts = {}) {
   if (!current || !profile) return;
   const card = current;
+  const quiet = !!opts.quiet;
 
   if (practiceMode || todayCount() >= DAILY_LIMIT) {
     practiceMode = true;
     showLimitNote();
-    cardFeedback(correct);
+    cardFeedback(correct, quiet);
     if (advance) setTimeout(nextCard, correct ? 620 : 420);
     return;
   }
@@ -1646,7 +1655,7 @@ async function grade(correct, advance = true, xpGain = XP_PER_CORRECT, spoke = t
   // 낙관적 갱신 (화면 먼저 반응)
   progressMap[card.id] = { leitner_stage: newStage, last_reviewed: nowIso };
   logs.push(logEntry);
-  cardFeedback(correct);
+  cardFeedback(correct, quiet);
   if (correct) {
     confetti();
     showXpPop(xpGain, spoke ? '정답!' : '정답! ⌨️ 타이핑');
@@ -1671,6 +1680,7 @@ async function grade(correct, advance = true, xpGain = XP_PER_CORRECT, spoke = t
       practiceMode = true;
       showLimitNote();
     } else if (reason === 'too_fast') {
+      if (quiet) return;          // 정답 확인을 아주 빨리 누른 경우는 조용히 넘어간다
       showToast('너무 빨라요. 천천히 말해 주세요. 이번 문제는 기록되지 않았어요.');
     } else {
       console.error('채점 저장 실패', error || data);
