@@ -1296,6 +1296,8 @@ const SPOKEN_TO_SYMBOL = [
   [/곱하기/g, '×'],
   [/나누기/g, '÷'],
   [/엑스/g, 'x'], [/와이/g, 'y'],
+  [/코사인/g, 'cos'], [/사인/g, 'sin'], [/탄젠트/g, 'tan'],
+  [/괄호(열고|닫고)?/g, '('],                   // "괄호 x 더하기 1 괄호 제곱" → 괄호는 끊는 자리로만 본다
 ];
 
 const FRAC_TOKEN = '[0-9a-z√π²³.]+';
@@ -1303,12 +1305,14 @@ const RE_FRAC_PP = /\(([^()]+)\)\/\(([^()]+)\)/g;                         // (a+
 const RE_FRAC_PT = new RegExp(`\\(([^()]+)\\)\\/(${FRAC_TOKEN})`, 'g');   // (a+b)/2
 const RE_FRAC_TP = new RegExp(`(${FRAC_TOKEN})\\/\\(([^()]+)\\)`, 'g');   // 10/(2π)
 const RE_FRAC_TT = new RegExp(`(${FRAC_TOKEN})\\/(${FRAC_TOKEN})`, 'g');  // 5/27
+const RE_DIV_TT  = new RegExp(`(${FRAC_TOKEN})÷(${FRAC_TOKEN})`, 'g');    // a÷2 (a 나누기 2)
 
 function normalizeWith(s, readDigits, spokenToSymbol) {
   let t = String(s || '').toLowerCase()
     .replace(/[−–—]/g, '-')
     .replace(/(\d),(?=\d{3}(\D|$))/g, '$1')      // 175,000 → 175000
     .replace(/\$/g, '')
+    .replace(/α/g, '알파').replace(/β/g, '베타').replace(/γ/g, '감마').replace(/θ/g, '세타')
     .replace(/\s+/g, '');
   if (spokenToSymbol) SPOKEN_TO_SYMBOL.forEach(([re, to]) => { t = t.replace(re, to); });
   t = t
@@ -1318,6 +1322,7 @@ function normalizeWith(s, readDigits, spokenToSymbol) {
     .replace(RE_FRAC_TP, '$2분의$1')
     .replace(/[()[\]{}]/g, '_')
     .replace(RE_FRAC_TT, '$2분의$1')
+    .replace(RE_DIV_TT, '$2분의$1')                  // a÷2 (a 나누기 2) → 2분의a
     .replace(/(\d+)\.(\d+)/g, (m, a, b) => readDigits === KEEP ? m : readDigits(a) + '점' + [...b].map(d => SINO[+d]).join(''))
     .replace(/[:：]/g, '대')
     .replace(/±/g, '플러스마이너스')
@@ -1333,6 +1338,8 @@ function normalizeWith(s, readDigits, spokenToSymbol) {
     .replace(/∥|⫽/g, '평행')
     .replace(/⊥/g, '수직')
     .replace(/=/g, '는')
+    .replace(/은/g, '는')                             // "b 제곱은 c 제곱" 과 "b²=c²" 를 같게
+    .replace(/([0-9a-z])의(?=[a-z0-9]?제곱)/g, '$1')   // "2의 n제곱" → 2n제곱 ("다항식의 제곱"은 그대로)
     .replace(/\d+/g, readDigits)
     .replace(/[,·]/g, '_')                 // 1, 3 처럼 숫자를 끊어 읽은 자리 (숫자끼리 붙지 않게)
     .replace(/[.?!~'"“”‘’`;]/g, '');
