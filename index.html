@@ -150,6 +150,12 @@ body {
   font-size: 13px; font-weight: 700; text-align: center;
   margin-top: 14px; min-height: 18px;
 }
+.link-btn {
+  display: block; margin: 14px auto 0; padding: 4px 6px;
+  border: none; background: none; cursor: pointer;
+  font-family: inherit; font-size: 13px; font-weight: 700;
+  color: var(--ink-soft); text-decoration: underline;
+}
 .auth-msg.err  { color: var(--red); }
 .auth-msg.ok   { color: var(--green-dark); }
 
@@ -704,7 +710,24 @@ main { flex: 1; padding: 18px 16px 8px; }
       <button class="btn btn-green btn-wide" id="loginBtn">로그인</button>
       <button class="btn btn-ghost btn-wide" id="signupBtn">처음이에요 · 회원가입</button>
     </div>
+    <button class="link-btn" id="forgotBtn">비밀번호를 잊었어요</button>
     <div class="auth-msg" id="authMsg"></div>
+  </div>
+
+  <!-- 메일의 링크를 눌러 돌아왔을 때: 새 비밀번호 정하기 -->
+  <div class="auth-card hidden" id="recoverCard">
+    <div class="field">
+      <label for="newPw1">새 비밀번호</label>
+      <input type="password" id="newPw1" placeholder="6자 이상" autocomplete="new-password" />
+    </div>
+    <div class="field">
+      <label for="newPw2">한 번 더</label>
+      <input type="password" id="newPw2" placeholder="같은 비밀번호" autocomplete="new-password" />
+    </div>
+    <div class="auth-actions">
+      <button class="btn btn-green btn-wide" id="recoverBtn">새 비밀번호로 바꾸기</button>
+    </div>
+    <div class="auth-msg" id="recoverMsg"></div>
   </div>
 </div>
 
@@ -1136,6 +1159,56 @@ loginBtn.addEventListener('click', async () => {
 });
 
 passwordInput.addEventListener('keydown', e => { if (e.key === 'Enter') loginBtn.click(); });
+
+/* ---------- 비밀번호 찾기 ----------
+   적은 이메일로 비밀번호를 다시 정하는 링크를 보낸다.
+   링크를 누르면 이 앱으로 돌아오고, 새 비밀번호를 정하는 칸이 뜬다. */
+$('forgotBtn').addEventListener('click', async () => {
+  const email = emailInput.value.trim();
+  if (!email) { emailInput.focus(); return setMsg('위 칸에 가입한 이메일을 적고 다시 눌러주세요.', 'err'); }
+  setMsg('메일 보내는 중…');
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: APP_URL });
+  if (error) {
+    return setMsg(/rate|limit|seconds/i.test(error.message)
+      ? '잠시 후에 다시 시도해주세요. (메일은 짧은 시간에 여러 번 보낼 수 없어요)'
+      : '메일을 보내지 못했어요: ' + error.message, 'err');
+  }
+  setMsg('메일을 보냈어요. 메일의 링크를 누르면 새 비밀번호를 정할 수 있어요. 몇 분이 지나도 안 오면 스팸함을 보거나 선생님께 말해주세요.', 'ok');
+});
+
+const recoverCard = $('recoverCard'), recoverMsg = $('recoverMsg');
+function showRecover() {
+  document.querySelector('#authScreen .auth-card').classList.add('hidden');
+  recoverCard.classList.remove('hidden');
+  app.classList.add('hidden');
+  authScreen.classList.remove('hidden');
+  $('newPw1').focus();
+}
+function recoverSay(text, kind) {
+  recoverMsg.textContent = text;
+  recoverMsg.className = 'auth-msg' + (kind ? ' ' + kind : '');
+}
+
+$('recoverBtn').addEventListener('click', async () => {
+  const a = $('newPw1').value, b = $('newPw2').value;
+  if (a.length < 6) return recoverSay('비밀번호는 6자 이상이어야 해요.', 'err');
+  if (a !== b) return recoverSay('두 칸의 비밀번호가 달라요.', 'err');
+  recoverSay('바꾸는 중…');
+  const { error } = await sb.auth.updateUser({ password: a });
+  if (error) return recoverSay('바꾸지 못했어요: ' + error.message, 'err');
+  recoverSay('');
+  history.replaceState(null, '', location.pathname);   // 주소창의 일회용 링크 정보 지우기
+  recoverCard.classList.add('hidden');
+  document.querySelector('#authScreen .auth-card').classList.remove('hidden');
+  showToast('비밀번호를 바꿨어요.');
+  await startApp();
+});
+$('newPw2').addEventListener('keydown', e => { if (e.key === 'Enter') $('recoverBtn').click(); });
+
+// 메일 링크로 돌아오면 Supabase 가 이 이벤트를 준다
+sb.auth.onAuthStateChange(event => {
+  if (event === 'PASSWORD_RECOVERY') showRecover();
+});
 
 logoutBtn.addEventListener('click', async () => {
   await sb.auth.signOut();
@@ -2599,7 +2672,16 @@ async function startApp(fallbackName) {
 }
 
 (async function boot() {
+  const hash = location.hash || '';
+  if (/error_description=/.test(hash)) {          // 링크가 만료됐거나 이미 쓴 경우
+    const m = decodeURIComponent((hash.match(/error_description=([^&]+)/) || [])[1] || '').replace(/\+/g, ' ');
+    history.replaceState(null, '', location.pathname);
+    setMsg('링크가 만료됐어요. 비밀번호 찾기를 다시 눌러주세요. (' + m + ')', 'err');
+    return;
+  }
+  const recovering = /type=recovery/.test(hash);
   const { data: { session } } = await sb.auth.getSession();
+  if (recovering) { showRecover(); return; }
   if (session) await startApp();
 })();
 </script>
