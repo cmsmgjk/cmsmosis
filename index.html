@@ -3,25 +3,27 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-<title>CMSmosis · 개념이 스며든다</title>
+<title>개념톡</title>
 
 <meta name="theme-color" content="#4ecdb0" />
 <meta name="description" content="중등 수학·과학 개념과 과학고 출석면접 질문을 소리 내어 말하며 외우는 학습 앱" />
 <!-- 카카오톡·문자로 링크를 보냈을 때 보이는 미리보기 -->
 <meta property="og:type" content="website" />
-<meta property="og:site_name" content="CMSmosis" />
-<meta property="og:title" content="CMSmosis · 말하면서 외우는 개념 · 출석면접" />
+<meta property="og:site_name" content="개념톡" />
+<meta property="og:title" content="개념톡 · 말하면서 외우는 개념과 출석면접" />
 <meta property="og:description" content="시즌 1등에게 치킨 쿠폰! 하루 50문제까지, 소리 내어 말하고 자동 채점받아요." />
 <meta property="og:url" content="https://cmsmosis.vercel.app/" />
-<meta property="og:image" content="https://cmsmosis.vercel.app/og-image.png" />
+<meta property="og:image" content="https://cmsmosis.vercel.app/og-image.png?v=2" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta name="twitter:card" content="summary_large_image" />
 <link rel="manifest" href="manifest.json" />
+<link rel="icon" href="favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-<meta name="apple-mobile-web-app-title" content="CMSmosis" />
+<meta name="apple-mobile-web-app-title" content="개념톡" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
@@ -681,8 +683,8 @@ main { flex: 1; padding: 18px 16px 8px; }
 <!-- ============================ 로그인 ============================ -->
 <div id="authScreen">
   <div class="logo-mark">🌱</div>
-  <h1 class="logo-type">CMSmosis</h1>
-  <p class="logo-tag">개념이 스며든다 · 중등 수학·과학</p>
+  <h1 class="logo-type">개념톡</h1>
+  <p class="logo-tag">말하면서 외우는 개념 · 과학고 출석면접</p>
 
   <div class="auth-card">
     <div class="field" id="nameField">
@@ -1811,7 +1813,7 @@ function promoMessage() {
   const st = seasonState(season);
   if (st === 'live' || st === 'upcoming') {
     return [
-      `[CMSmosis] ${season.name}`,
+      `[개념톡] ${season.name}`,
       `1등에게 ${josa(season.prize || '상품', '을', '를')} 드려요!`,
       '',
       `기간: ${shortDate(season.starts_on)} ~ ${shortDate(season.ends_on)}`,
@@ -1824,7 +1826,7 @@ function promoMessage() {
     ].filter(x => x !== null).join('\n');
   }
   return [
-    '[CMSmosis] 말하면서 외우는 개념 · 출석면접 연습',
+    '[개념톡] 말하면서 외우는 개념 · 출석면접 연습',
     '질문을 소리 내어 답하면 자동으로 채점해 줘요.',
     `시작하기: ${APP_URL}`,
     '(크롬 브라우저에서 열어야 음성 인식이 돼요)'
@@ -1846,7 +1848,7 @@ async function copyText(text) {
 async function shareSeason() {
   const text = promoMessage();
   if (navigator.share) {
-    try { await navigator.share({ title: 'CMSmosis', text }); return; }
+    try { await navigator.share({ title: '개념톡', text }); return; }
     catch (e) { if (e.name === 'AbortError') return; }
   }
   showToast(await copyText(text) ? '문구를 복사했어요. 단톡방에 붙여 넣어 주세요.' : '복사하지 못했어요.');
