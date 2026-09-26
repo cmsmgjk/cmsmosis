@@ -6,7 +6,17 @@
 <title>CMSmosis · 개념이 스며든다</title>
 
 <meta name="theme-color" content="#4ecdb0" />
-<meta name="description" content="중등 수학·과학 개념을 소리 내어 말하며 외우는 학습 앱" />
+<meta name="description" content="중등 수학·과학 개념과 과학고 출석면접 질문을 소리 내어 말하며 외우는 학습 앱" />
+<!-- 카카오톡·문자로 링크를 보냈을 때 보이는 미리보기 -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="CMSmosis" />
+<meta property="og:title" content="CMSmosis · 말하면서 외우는 개념 · 출석면접" />
+<meta property="og:description" content="시즌 1등에게 치킨 쿠폰! 하루 100문제까지, 소리 내어 말하고 자동 채점받아요." />
+<meta property="og:url" content="https://cmsmosis.vercel.app/" />
+<meta property="og:image" content="https://cmsmosis.vercel.app/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
 <link rel="manifest" href="manifest.json" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -546,7 +556,7 @@ main { flex: 1; padding: 18px 16px 8px; }
   width: 100%; max-width: 480px;
   background: var(--surface);
   border-top: 2px solid var(--line);
-  display: grid; grid-template-columns: repeat(3, 1fr);
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
   z-index: 40;
   padding-bottom: env(safe-area-inset-bottom);
 }
@@ -570,6 +580,99 @@ main { flex: 1; padding: 18px 16px 8px; }
 .skeleton {
   text-align: center; padding: 40px 0;
   font-size: 14px; font-weight: 700; color: var(--ink-soft);
+}
+
+/* ---------- 과목 선택 (단원 위 한 줄) ---------- */
+.subject-row { display: flex; gap: 6px; margin-bottom: 10px; }
+.subject-tab {
+  flex: 1; border: 2px solid var(--line); background: var(--surface);
+  border-radius: 12px; padding: 9px 6px;
+  font-family: inherit; font-size: 13px; font-weight: 900; color: var(--ink-soft);
+  cursor: pointer;
+}
+.subject-tab.on { border-color: var(--blue); background: #e7f6fb; color: var(--blue-dark); }
+
+/* ---------- 채점: 꼭 말해야 하는 낱말 ---------- */
+.verdict .kw span.req { box-shadow: 0 0 0 1.5px currentColor inset; }
+.verdict .must { margin-top: 8px; font-size: 12px; font-weight: 800; }
+
+/* ---------- 시즌 배너 (학습 탭 위) ---------- */
+.season-banner {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface); border: 2px solid var(--yellow);
+  border-radius: 16px; padding: 12px 14px; margin-bottom: 12px;
+  cursor: pointer;
+}
+.season-banner .sb-main { flex: 1; min-width: 0; }
+.season-banner .sb-title { font-size: 14px; font-weight: 900; color: var(--ink); }
+.season-banner .sb-sub { font-size: 12px; font-weight: 700; color: var(--ink-soft); margin-top: 2px; }
+.season-banner .sb-dday {
+  flex: 0 0 auto; font-size: 13px; font-weight: 900; color: #7a5f1e;
+  background: #fdf4da; border-radius: 10px; padding: 6px 9px;
+}
+.season-banner.idle { border-color: var(--line); cursor: default; }
+
+.limit-note {
+  margin-top: 12px; padding: 10px 13px; border-radius: 12px;
+  background: #fdf5e2; color: #96762b; font-size: 12px; font-weight: 800;
+}
+
+/* ---------- 알림 창 (시즌 안내 · 우승) ---------- */
+.modal-back {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(40, 56, 52, .45);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.modal {
+  width: 100%; max-width: 380px; background: var(--surface);
+  border-radius: 20px; padding: 24px 22px 20px;
+  box-shadow: 0 18px 50px rgba(0,0,0,.18);
+}
+.modal h3 { margin: 0 0 6px; font-size: 19px; font-weight: 900; }
+.modal .m-prize {
+  margin: 14px 0; padding: 14px; border-radius: 14px;
+  background: #fdf4da; color: #7a5f1e; font-size: 15px; font-weight: 900; text-align: center;
+}
+.modal ul { margin: 0 0 16px; padding-left: 18px; font-size: 13px; font-weight: 600; color: #555; line-height: 1.7; }
+.modal .m-actions { display: flex; gap: 8px; }
+.modal .m-actions .btn { flex: 1; }
+
+/* ---------- 관리 탭 ---------- */
+.adm-form .field { margin-bottom: 10px; }
+.adm-form .field input, .adm-form .field textarea {
+  width: 100%; padding: 11px 13px; border: 2px solid var(--line); border-radius: 12px;
+  font-family: inherit; font-size: 14px; font-weight: 600; background: #fbfefd; outline: none;
+}
+.adm-form .field textarea { min-height: 64px; resize: vertical; }
+.adm-form .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.adm-msg { font-size: 12px; font-weight: 800; margin-top: 8px; min-height: 16px; }
+.adm-msg.err { color: var(--red-dark); }
+.adm-msg.ok  { color: var(--green-dark); }
+.adm-season {
+  border: 2px solid var(--line); border-radius: 14px; padding: 12px 13px; margin-top: 10px;
+}
+.adm-season .as-head { display: flex; align-items: center; gap: 8px; }
+.adm-season .as-name { flex: 1; font-size: 14px; font-weight: 900; }
+.adm-season .as-state { font-size: 11px; font-weight: 900; padding: 3px 8px; border-radius: 999px; background: #eef4f2; color: var(--ink-soft); }
+.adm-season .as-state.live { background: #e3f7f0; color: #2a7565; }
+.adm-season .as-sub { font-size: 12px; font-weight: 700; color: var(--ink-soft); margin-top: 4px; }
+.adm-season .as-btns { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.btn-sm { padding: 8px 12px; font-size: 12px; border-radius: 10px; }
+.win-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid #eef4f2; font-size: 13px; font-weight: 800; }
+.win-row:first-child { border-top: none; }
+.win-row .wr-name { flex: 1; }
+.win-row input[type=text] { width: 110px; padding: 6px 8px; border: 2px solid var(--line); border-radius: 8px; font-family: inherit; font-size: 12px; }
+.win-row label { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--ink-soft); }
+.toast {
+  position: fixed; left: 50%; bottom: 96px; transform: translate(-50%, 20px);
+  max-width: 88vw; background: #2f3d3a; color: #fff;
+  padding: 11px 16px; border-radius: 12px; font-size: 13px; font-weight: 700;
+  opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease; z-index: 110;
+}
+.toast.on { opacity: 1; transform: translate(-50%, 0); }
+.promo-text {
+  width: 100%; min-height: 150px; padding: 12px; border: 2px solid var(--line); border-radius: 12px;
+  font-family: inherit; font-size: 13px; line-height: 1.6; background: #fbfefd; resize: vertical;
 }
 </style>
 </head>
@@ -616,8 +719,8 @@ main { flex: 1; padding: 18px 16px 8px; }
     </div>
     <div class="goal-wrap">
       <div class="goal-row">
-        <span>오늘의 목표</span>
-        <span id="goalText">0 / 20</span>
+        <span id="goalLabel">오늘 푼 문제 · 목표 20</span>
+        <span id="goalText">0 / 100</span>
       </div>
       <div class="goalbar"><div class="goalbar-fill" id="goalFill"></div></div>
     </div>
@@ -626,6 +729,14 @@ main { flex: 1; padding: 18px 16px 8px; }
   <main>
     <!-- ---------- 학습 탭 ---------- -->
     <section class="tab active" id="tab-study">
+      <div class="season-banner idle hidden" id="seasonBanner">
+        <div class="sb-main">
+          <div class="sb-title" id="sbTitle"></div>
+          <div class="sb-sub" id="sbSub"></div>
+        </div>
+        <div class="sb-dday" id="sbDday"></div>
+      </div>
+      <div class="subject-row" id="subjectRow"></div>
       <div class="unit-scroll" id="unitScroll"></div>
 
       <div class="flashcard" id="flashcard">
@@ -644,6 +755,7 @@ main { flex: 1; padding: 18px 16px 8px; }
                  autocomplete="off" autocorrect="off" spellcheck="false"
                  placeholder="말한 내용을 그대로 적어주세요">
           <div class="verdict" id="verdict"></div>
+          <div class="limit-note hidden" id="limitNote"></div>
           <div class="fc-answer" id="cardAnswer">
             <span class="lbl">정답</span>
             <span id="answerText"></span>
@@ -685,15 +797,50 @@ main { flex: 1; padding: 18px 16px 8px; }
     <!-- ---------- 랭킹 탭 ---------- -->
     <section class="tab" id="tab-rank">
       <div class="panel">
-        <h2 id="leagueTitle">🏆 리그</h2>
+        <h2 id="leagueTitle">시즌 순위</h2>
         <div class="desc" id="leagueDesc">불러오는 중…</div>
         <div id="rankList"><div class="skeleton">불러오는 중…</div></div>
+        <button class="btn btn-ghost btn-wide btn-sm" id="shareBtn" style="margin-top:12px">친구에게 알리기</button>
       </div>
 
       <div class="panel">
         <h2>👑 명예의 전당</h2>
-        <div class="desc">지난 시즌 리그별 우승자</div>
+        <div class="desc">지난 시즌 1~3위</div>
         <div id="hallList"><div class="skeleton">불러오는 중…</div></div>
+      </div>
+    </section>
+
+    <!-- ---------- 관리 탭 (선생님만 보임) ---------- -->
+    <section class="tab" id="tab-admin">
+      <div class="panel adm-form">
+        <h2 id="admFormTitle">새 시즌 만들기</h2>
+        <div class="desc">기간 안에 맞힌 문제만 시즌 점수에 들어가요. 끝난 다음 날 1~3위가 자동으로 새겨져요.</div>
+        <input type="hidden" id="admId" />
+        <div class="field"><label for="admName">시즌 이름</label><input id="admName" placeholder="예: 10월 출석면접 대비 시즌" /></div>
+        <div class="row2">
+          <div class="field"><label for="admStart">시작일</label><input type="date" id="admStart" /></div>
+          <div class="field"><label for="admEnd">종료일</label><input type="date" id="admEnd" /></div>
+        </div>
+        <div class="field"><label for="admPrize">1등 상품</label><input id="admPrize" placeholder="예: 치킨 기프티콘" /></div>
+        <div class="field"><label for="admNote">학생 안내 문구 (선택)</label><textarea id="admNote" placeholder="예: 동점이면 먼저 그 점수에 도달한 학생이 1등이에요."></textarea></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-green" style="flex:1" id="admSave">저장</button>
+          <button class="btn btn-ghost hidden" id="admCancel">취소</button>
+        </div>
+        <div class="adm-msg" id="admMsg"></div>
+      </div>
+
+      <div class="panel">
+        <h2>시즌 목록</h2>
+        <div class="desc">진행 중인 시즌은 이름·기간·상품을 고칠 수 있어요.</div>
+        <div id="admSeasons"><div class="skeleton">불러오는 중…</div></div>
+      </div>
+
+      <div class="panel">
+        <h2>홍보 문구</h2>
+        <div class="desc">단톡방이나 문자에 붙여 넣으세요. 링크를 보내면 미리보기 그림이 같이 떠요.</div>
+        <textarea class="promo-text" id="promoText" readonly></textarea>
+        <button class="btn btn-blue btn-wide btn-sm" id="promoCopy" style="margin-top:10px">문구 복사</button>
       </div>
     </section>
 
@@ -732,7 +879,17 @@ main { flex: 1; padding: 18px 16px 8px; }
     <button class="on" data-tab="study"><span class="ico">📚</span>학습</button>
     <button data-tab="rank"><span class="ico">🏆</span>랭킹</button>
     <button data-tab="me"><span class="ico">📅</span>내 기록</button>
+    <button data-tab="admin" class="hidden" id="adminTabBtn"><span class="ico">⚙️</span>관리</button>
   </nav>
+</div>
+
+<!-- 시즌 안내 / 우승 알림 -->
+<div class="modal-back hidden" id="modalBack">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h3 id="modalTitle"></h3>
+    <div id="modalBody"></div>
+    <div class="m-actions" id="modalActions"></div>
+  </div>
 </div>
 
 <div id="xpPop"></div>
@@ -755,49 +912,28 @@ const XP_TYPED = 5;        // 말 못 하는 상황용. 말하기의 절반만 �
 const DAILY_GOAL = 20;
 const XP_PER_LEVEL = 100;
 
-/* ---------- 시즌 · 리그 ----------
-   시즌은 2주 단위. 아래 기준일·길이는 supabase_season_v1.sql 의
-   current_season_key() 와 반드시 같아야 한다. 한쪽만 바꾸지 말 것. */
-const SEASON_ANCHOR = Date.UTC(2026, 0, 5);   // 2026-01-05 (월요일)
-const SEASON_DAYS = 14;
+/* ---------- 시즌 ----------
+   시즌은 선생님이 관리 탭에서 이름·기간·상품을 정해 만든다 (supabase_season_v2.sql).
+   날짜는 모두 한국 날짜(YYYY-MM-DD)로 다룬다. */
+const DAILY_LIMIT = 100;            // 하루에 채점되는 문제 수. 서버 record_answer() 와 같아야 한다.
 const DAY_MS = 86400000;
-const LEAGUES = [
-  null,
-  { name: '새싹', icon: '🌱' },
-  { name: '잎새', icon: '🍃' },
-  { name: '줄기', icon: '🌿' },
-  { name: '꽃',   icon: '🌸' },
-  { name: '열매', icon: '🍎' },
-];
-const TOP_LEAGUE = 5;
+const APP_URL = 'https://cmsmosis.vercel.app/';
 
-function utcMidnight(d) {
-  return Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+function kstDateKey(d = new Date()) {  // 한국 날짜 'YYYY-MM-DD'
+  return new Date(d.getTime() + 9 * 3600000).toISOString().slice(0, 10);
 }
-function seasonStartMs(d = new Date()) {
-  const idx = Math.floor((utcMidnight(d) - SEASON_ANCHOR) / (SEASON_DAYS * DAY_MS));
-  return SEASON_ANCHOR + idx * SEASON_DAYS * DAY_MS;
+function daysBetween(fromKey, toKey) {   // 두 날짜 사이 일수 (to - from)
+  return Math.round((Date.parse(toKey) - Date.parse(fromKey)) / DAY_MS);
 }
-function seasonKeyOf(msOrDate) {
-  const ms = typeof msOrDate === 'number' ? msOrDate : seasonStartMs(msOrDate);
-  const d = new Date(ms);
-  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+function shortDate(key) {                // '2026-10-05' -> '10/5'
+  const [, m, d] = key.split('-');
+  return `${Number(m)}/${Number(d)}`;
 }
-function seasonDaysLeft(d = new Date()) {
-  const endMs = seasonStartMs(d) + (SEASON_DAYS - 1) * DAY_MS;
-  return Math.round((endMs - utcMidnight(d)) / DAY_MS) + 1;
-}
-function seasonLabel(key) {          // '2026-07-20' -> '7월 20일 시즌'
-  const [, m, dd] = key.split('-');
-  return `${Number(m)}월 ${Number(dd)}일 시즌`;
-}
-function leagueOf(n) {
-  return LEAGUES[Math.min(TOP_LEAGUE, Math.max(1, Number(n) || 1))];
-}
-/* 리그 인원 n 명일 때 승급/강등 인원.
-   supabase_season_v1.sql 의 settle_seasons() 와 같은 식이다. */
-function zoneSize(n) {
-  return Math.max(1, Math.floor(n * 0.2));
+function seasonState(s, today = kstDateKey()) {
+  if (!s) return 'none';
+  if (today < s.starts_on) return 'upcoming';
+  if (today > s.ends_on) return 'ended';
+  return 'live';
 }
 
 /* ============================================================
@@ -846,6 +982,12 @@ const mrXp = $('mrXp'), mrList = $('mrList');
 const mStreak = $('mStreak'), mXp = $('mXp'), mAcc = $('mAcc'), mMaster = $('mMaster');
 const calTitle = $('calTitle'), calGrid = $('calGrid');
 const xpPop = $('xpPop');
+const subjectRow = $('subjectRow'), limitNote = $('limitNote'), goalLabel = $('goalLabel');
+const seasonBanner = $('seasonBanner'), sbTitle = $('sbTitle'), sbSub = $('sbSub'), sbDday = $('sbDday');
+
+let selectedSubject = null;
+let season = null;         // 지금 진행 중인 시즌 (없으면 곧 시작할 시즌)
+let board = [];            // 이번 시즌 순위표 [{rank, user_id, name, score, answered}]
 
 /* ============================================================
    유틸
@@ -973,10 +1115,8 @@ signupBtn.addEventListener('click', async () => {
   if (data.user && !data.session) {
     return setMsg('확인 메일을 보냈어요. 메일 인증 후 로그인해주세요.', 'ok');
   }
-  await sb.from('profiles').insert({
-    id: data.user.id, name,
-    season_key: seasonKeyOf(new Date()), season_score: 0, league: 1
-  });
+  // 프로필에는 id·이름만 넣을 수 있다 (점수 칸은 서버만 고친다)
+  await sb.from('profiles').insert({ id: data.user.id, name });
   setMsg('');
   await startApp(name);
 });
@@ -1007,10 +1147,7 @@ async function ensureProfile(userId, fallbackName) {
   let { data } = await sb.from('profiles').select('*').eq('id', userId).maybeSingle();
   if (!data) {
     const { data: created, error } = await sb.from('profiles')
-      .insert({
-        id: userId, name: fallbackName || '이름없음',
-        season_key: seasonKeyOf(new Date()), season_score: 0, league: 1
-      })
+      .insert({ id: userId, name: fallbackName || '이름없음' })
       .select().single();
     if (error) { console.error(error); return null; }
     data = created;
@@ -1032,19 +1169,50 @@ function isDue(card) {
   return new Date(p.last_reviewed).getTime() + days * 86400000 <= Date.now();
 }
 
+function cardsInScope() {
+  return allCards.filter(c =>
+    (!selectedSubject || c.subject === selectedSubject) &&
+    (selectedUnit === '__all__' || c.unit === selectedUnit));
+}
+
 function buildQueue() {
-  const pool = selectedUnit === '__all__'
-    ? allCards
-    : allCards.filter(c => c.unit === selectedUnit);
+  const pool = cardsInScope();
   queue = pool.filter(isDue).sort(() => Math.random() - 0.5);
   queueNote.textContent = `복습 대기 ${queue.length}장 · 선택 단원 전체 ${pool.length}장`;
 }
 
+/* 과목(수학 개념 / 출석면접) → 단원 두 단계로 고른다.
+   단원 이름은 카드 데이터에서 그대로 읽어온다. */
+const SUBJECT_ORDER = ['수학', '출석면접'];
+const SUBJECT_LABEL = { '수학': '개념 카드', '출석면접': '출석면접' };
+
+function renderSubjects() {
+  const order = s => { const i = SUBJECT_ORDER.indexOf(s); return i < 0 ? 99 : i; };
+  const subjects = [...new Set(allCards.map(c => c.subject || '수학'))].sort((a, b) => order(a) - order(b));
+  if (!selectedSubject || !subjects.includes(selectedSubject)) selectedSubject = subjects[0] || null;
+  subjectRow.classList.toggle('hidden', subjects.length < 2);
+  subjectRow.innerHTML = subjects.map(s => {
+    const n = allCards.filter(c => c.subject === s).length;
+    return `<button class="subject-tab ${s === selectedSubject ? 'on' : ''}" data-subject="${esc(s)}">${esc(SUBJECT_LABEL[s] || s)} · ${n}</button>`;
+  }).join('');
+  subjectRow.querySelectorAll('.subject-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedSubject = btn.dataset.subject;
+      selectedUnit = '__all__';
+      try { localStorage.setItem('cmsmosis.subject', selectedSubject); } catch (e) { /* 저장 안 돼도 괜찮다 */ }
+      renderSubjects();
+      renderUnits();
+      buildQueue();
+      nextCard();
+    });
+  });
+}
+
 function renderUnits() {
-  const units = [...new Set(allCards.map(c => c.unit))];
+  const units = [...new Set(allCards.filter(c => !selectedSubject || c.subject === selectedSubject).map(c => c.unit))];
   unitScroll.innerHTML =
-    `<button class="unit-pill on" data-unit="__all__">전체</button>` +
-    units.map(u => `<button class="unit-pill" data-unit="${esc(u)}">${esc(u)}</button>`).join('');
+    `<button class="unit-pill ${selectedUnit === '__all__' ? 'on' : ''}" data-unit="__all__">전체</button>` +
+    units.map(u => `<button class="unit-pill ${u === selectedUnit ? 'on' : ''}" data-unit="${esc(u)}">${esc(u)}</button>`).join('');
 
   unitScroll.querySelectorAll('.unit-pill').forEach(pill => {
     pill.addEventListener('click', () => {
@@ -1066,6 +1234,16 @@ function setStage(n) {
    자동 채점
    말한 내용에 정답의 핵심 낱말이 얼마나 들어있는지로 판정한다.
    음성 인식은 띄어쓰기·조사가 들쭉날쭉해서 공백을 지우고 비교한다.
+
+   키워드 문법 (쉼표로 구분)
+     낱말        : 일반 키워드. 전체의 60% 이상 말하면 정답
+     *낱말       : 꼭 말해야 하는 키워드. 하나라도 빠지면 오답
+     낱말|다른말 : 이 중 하나만 말해도 된다 (예: 일대일|1대1)
+     !낱말       : 이 말이 나오면 오답 (반대 개념을 말했을 때 등)
+   예) "*무리수, 귀류법, 모순|말이안되"
+
+   비교는 자모 단위로 한다. 그래서 "작아지"는 "작아진다"와,
+   "아니"는 "아닙니다"와, "바뀌"는 "바뀝니다"와 맞는다.
    ============================================================ */
 const PASS_RATIO = 0.6;   // 핵심 낱말의 60% 이상 → 정답
 
@@ -1076,11 +1254,7 @@ const PASS_RATIO = 0.6;   // 핵심 낱말의 60% 이상 → 정답
 const SINO = ['영','일','이','삼','사','오','육','칠','팔','구'];
 const NATIVE = ['','한','두','세','네','다섯','여섯','일곱','여덟','아홉','열'];
 
-function sinoRead(numStr) {          // 30 → 삼십 (비율·각도·번호를 읽는 방식)
-  const n = parseInt(numStr, 10);
-  if (isNaN(n)) return numStr;
-  if (n === 0) return '영';
-  if (n > 9999) return [...String(n)].map(d => SINO[+d]).join('');
+function sinoUnder10000(n) {         // 0 < n < 10000
   const units = ['', '십', '백', '천'];
   const s = String(n);
   let out = '';
@@ -1092,82 +1266,206 @@ function sinoRead(numStr) {          // 30 → 삼십 (비율·각도·번호를
   return out;
 }
 
+function sinoRead(numStr) {          // 30 → 삼십, 175000 → 십칠만오천
+  const n = parseInt(numStr, 10);
+  if (isNaN(n)) return numStr;
+  if (n === 0) return '영';
+  if (numStr.length > 1 && numStr[0] === '0') return [...numStr].map(d => SINO[+d]).join('');
+  if (n >= 1e12) return [...String(n)].map(d => SINO[+d]).join('');
+  let out = '';
+  const eok = Math.floor(n / 1e8), man = Math.floor((n % 1e8) / 1e4), rest = n % 1e4;
+  if (eok) out += sinoUnder10000(eok) + '억';
+  if (man) out += (man === 1 ? '' : sinoUnder10000(man)) + '만';
+  if (rest) out += sinoUnder10000(rest);
+  return out;
+}
+
 function nativeRead(numStr) {        // 8 → 여덟 (개·쌍처럼 세는 말 앞에서 쓰는 방식)
   const n = parseInt(numStr, 10);
   return (n >= 1 && n <= 10) ? NATIVE[n] : sinoRead(numStr);
 }
 
-function normalizeWith(s, readDigits) {
-  return String(s || '')
+/* 수식을 말로 할 때 쓰는 낱말을 기호로 모은다.
+   "x 제곱 빼기 4x" 와 "x²-4x" 가 같은 글자가 되게 하려는 것이다.
+   키워드와 말한 내용 양쪽에 똑같이 적용한다. ("빼", "더해" 같은 보통 낱말은
+   이 변환을 하지 않은 형태로도 한 번 더 비교하므로 걱정하지 않아도 된다.) */
+const SPOKEN_TO_SYMBOL = [
+  [/플러스마이너스|플마/g, '±'],
+  [/마이너스|빼기/g, '-'],
+  [/플러스|더하기/g, '+'],
+  [/곱하기/g, '×'],
+  [/나누기/g, '÷'],
+  [/엑스/g, 'x'], [/와이/g, 'y'],
+];
+
+const FRAC_TOKEN = '[0-9a-z√π²³.]+';
+const RE_FRAC_PP = /\(([^()]+)\)\/\(([^()]+)\)/g;                         // (a+b)/(c+d)
+const RE_FRAC_PT = new RegExp(`\\(([^()]+)\\)\\/(${FRAC_TOKEN})`, 'g');   // (a+b)/2
+const RE_FRAC_TP = new RegExp(`(${FRAC_TOKEN})\\/\\(([^()]+)\\)`, 'g');   // 10/(2π)
+const RE_FRAC_TT = new RegExp(`(${FRAC_TOKEN})\\/(${FRAC_TOKEN})`, 'g');  // 5/27
+
+function normalizeWith(s, readDigits, spokenToSymbol) {
+  let t = String(s || '').toLowerCase()
+    .replace(/[−–—]/g, '-')
+    .replace(/(\d),(?=\d{3}(\D|$))/g, '$1')      // 175,000 → 175000
+    .replace(/\$/g, '')
+    .replace(/\s+/g, '');
+  if (spokenToSymbol) SPOKEN_TO_SYMBOL.forEach(([re, to]) => { t = t.replace(re, to); });
+  t = t
+    .replace(/\|([^|]+)\|/g, '절댓값$1')           // |a| → 절댓값a
+    .replace(RE_FRAC_PP, '$2분의$1')
+    .replace(RE_FRAC_PT, '$2분의$1')
+    .replace(RE_FRAC_TP, '$2분의$1')
+    .replace(/[()[\]{}]/g, '_')
+    .replace(RE_FRAC_TT, '$2분의$1')
+    .replace(/(\d+)\.(\d+)/g, (m, a, b) => readDigits === KEEP ? m : readDigits(a) + '점' + [...b].map(d => SINO[+d]).join(''))
     .replace(/[:：]/g, '대')
+    .replace(/±/g, '플러스마이너스')
     .replace(/√/g, '루트')
+    .replace(/∛/g, '세제곱근')
+    .replace(/π/g, '파이')
     .replace(/[°˚]/g, '도')
     .replace(/²/g, '제곱')
     .replace(/³/g, '세제곱')
+    .replace(/ⁿ/g, 'n제곱')
+    .replace(/×/g, '곱하기')
+    .replace(/÷/g, '나누기')
+    .replace(/∥|⫽/g, '평행')
+    .replace(/⊥/g, '수직')
+    .replace(/=/g, '는')
     .replace(/\d+/g, readDigits)
-    .replace(/\s+/g, '')
-    .toLowerCase();
+    .replace(/[,·]/g, '_')                 // 1, 3 처럼 숫자를 끊어 읽은 자리 (숫자끼리 붙지 않게)
+    .replace(/[.?!~'"“”‘’`;]/g, '');
+  return t;
 }
 
-function normalize(s)       { return normalizeWith(s, sinoRead); }
-function normalizeNative(s) { return normalizeWith(s, nativeRead); }
+function normalize(s)       { return normalizeWith(s, sinoRead, true); }
+const KEEP = d => d;
+function normalizeDigits(s) { return normalizeWith(s, KEEP, true); }       // 숫자는 그대로 둔 형태
+function normalizeNative(s) { return normalizeWith(s, nativeRead, true); }
+function normalizeRaw(s)    { return normalizeWith(s, sinoRead, false); }
 
-/* 뜻이 같은 표현 묶음. 어간(짧은 형태)으로 적어두면 "같다/같음/같은"처럼
-   어미가 달라도, "동일하다/일치하다"처럼 아예 다른 낱말이어도 같이 인정된다. */
+/* ---------- 자모 분해: "진" → "ㅈㅣㄴ" ---------- */
+const CHO  = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ';
+const JUNG = ['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ'];
+const JONG = ['','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+function toJamo(s) {
+  let out = '';
+  for (const ch of s) {
+    const c = ch.charCodeAt(0) - 0xAC00;
+    if (c < 0 || c > 11171) { out += ch; continue; }
+    out += CHO[Math.floor(c / 588)] + JUNG[Math.floor((c % 588) / 28)] + JONG[c % 28];
+  }
+  return out;
+}
+
+/* 숫자 키워드는 앞뒤가 다른 숫자에 붙어 있으면 인정하지 않는다.
+   ("20" 이 "27" 에, "3" 이 "13" 에 걸리지 않게)
+   음성인식은 숫자를 대개 아라비아 숫자로 적으므로 숫자 그대로 비교하고,
+   말한 내용에 숫자가 하나도 없을 때만(한글로 적혔을 때) 한글 읽기로 비교한다.
+   한글 비교에서 '이', '일'은 조사("합이", "0일 때")와 겹쳐서 경계로 보지 않는다. */
+const NUM_CH = '영삼사오육칠팔구십백천만억점';
+const RE_NUM_DIGIT = /^-?[0-9.]+(\|-?[0-9.]+)*(분의-?[0-9.]+)?$/;
+function hasNumberAt(said, v, isNumCh) {
+  for (let i = said.indexOf(v); i >= 0; i = said.indexOf(v, i + 1)) {
+    const prev = said[i - 1], next = said[i + v.length];
+    if (!(prev && isNumCh(prev)) && !(next && isNumCh(next))) return true;
+  }
+  return false;
+}
+const isDigitCh = ch => /[0-9]/.test(ch);
+const isSinoCh  = ch => NUM_CH.includes(ch);
+
+/* 뜻이 같은 표현 묶음. 키워드가 묶음의 낱말을 품고 있으면 묶음 전체를 인정한다.
+   ("같다/같음/같은"처럼 어미가 달라도, "동일하다/일치하다"처럼 다른 낱말이어도) */
 const SYNONYM_GROUPS = [
   ['같', '동일', '일치', '동등'],
+  ['아니', '않'],              // "아닙니다" / "않습니다" (자모 비교라 "아닙"도 "아니"에 걸린다)
 ];
 
-function keyVariants(keyword) {
-  const k = normalize(keyword);
-  const group = SYNONYM_GROUPS.find(g => g.some(w => {
-    const gw = normalize(w);
-    return k.includes(gw) || gw.includes(k);
-  }));
-  if (group) return group.map(normalize);
-
+function keyVariants(word) {
+  const k = normalize(word);
+  const group = SYNONYM_GROUPS.find(g => g.some(w => k === normalize(w)));
+  const base = group ? group.map(normalize) : [k];
   // 숫자는 읽는 방식이 둘("팔 개" / "여덟 개")이라 두 가지 다 인정한다
-  const nat = normalizeNative(keyword);
-  return nat === k ? [k] : [k, nat];
+  return [...new Set([...base, normalizeNative(word), normalizeRaw(word)])].filter(Boolean);
+}
+
+function altHeard(forms, alt) {
+  const d = normalizeDigits(alt).replace(/^_+|_+$/g, '').replace(/_+/g, '|');
+  if (RE_NUM_DIGIT.test(d)) {                                  // 숫자만 있는 키워드
+    if (forms.hasDigits) return hasNumberAt(forms.digits, d, isDigitCh);
+    return hasNumberAt(forms.syll[0].replace(/_/g, ''), normalize(alt).replace(/_/g, ''), isSinoCh);
+  }
+  return keyVariants(alt).some(v => {
+    const j = toJamo(v.replace(/_/g, ''));
+    return forms.jamo.some(s => s.includes(j));
+  });
+}
+
+/* 키워드 한 칸을 해석한다 → { label, alts, required, forbidden } */
+function parseKeyword(raw) {
+  let s = raw.trim();
+  let required = false, forbidden = false;
+  if (s.startsWith('*')) { required = true; s = s.slice(1); }
+  else if (s.startsWith('!')) { forbidden = true; s = s.slice(1); }
+  const alts = s.split('|').map(a => a.trim()).filter(Boolean);
+  return { label: alts[0] || s, alts, required, forbidden };
+}
+
+function parseKeywords(card) {
+  return (card.keywords || '').split(',').map(k => k.trim()).filter(Boolean).map(parseKeyword);
 }
 
 function gradeBySpeech(card, transcript) {
-  const keys = (card.keywords || '').split(',').map(k => k.trim()).filter(Boolean);
+  const all = parseKeywords(card);
+  const keys = all.filter(k => !k.forbidden);
   if (!keys.length) return null;
 
-  const said = normalize(transcript);
-  const hit = keys.filter(k => keyVariants(k).some(v => said.includes(v)));
+  const syll = [normalize(transcript), normalizeRaw(transcript)];
+  const digits = normalizeDigits(transcript).replace(/_+/g, '|');
+  const forms = { syll, digits, hasDigits: /[0-9]/.test(digits), jamo: syll.map(s => toJamo(s.replace(/_/g, ''))) };
+  const heard = k => k.alts.some(a => altHeard(forms, a));
+
+  const hit = keys.filter(heard);
+  const miss = keys.filter(k => !hit.includes(k));
+  const missingRequired = miss.filter(k => k.required);
+  const saidForbidden = all.filter(k => k.forbidden && heard(k));
   const ratio = hit.length / keys.length;
 
   return {
-    keys, hit,
-    miss: keys.filter(k => !hit.includes(k)),
-    ratio,
-    pass: ratio >= PASS_RATIO
+    keys, hit, miss, missingRequired, saidForbidden, ratio,
+    pass: ratio >= PASS_RATIO && !missingRequired.length && !saidForbidden.length
   };
 }
 
 function showVerdict(r, opts = {}) {
   if (!r) { verdictEl.classList.remove('on'); return; }
   const { edited = false, spoke = true, xp = XP_PER_CORRECT } = opts;
+  const total = r.keys.length, got = r.hit.length;
 
   const level = r.pass ? 'pass' : (r.ratio >= 0.3 ? 'near' : 'fail');
   const head = r.pass
-    ? `잘했어요! 핵심 ${r.keys.length}개 중 ${r.hit.length}개를 말했어요`
-    : (r.ratio >= 0.3
-        ? `조금 더! 핵심 ${r.keys.length}개 중 ${r.hit.length}개만 나왔어요`
-        : `아직이에요. 정답을 보고 다시 말해볼까요?`);
+    ? `잘했어요! 핵심 ${total}개 중 ${got}개를 말했어요`
+    : r.saidForbidden.length
+      ? '틀린 말이 섞여 있어요. 정답을 보고 다시 말해볼까요?'
+      : (r.ratio >= 0.3
+          ? `조금 더! 핵심 ${total}개 중 ${got}개만 나왔어요`
+          : '아직이에요. 정답을 보고 다시 말해볼까요?');
 
   verdictEl.className = 'verdict on ' + level;
   verdictEl.innerHTML =
     esc(head) +
     '<div class="kw">' +
-    r.keys.map(k =>
-      `<span class="${r.hit.includes(k) ? 'hit' : 'miss'}">${r.hit.includes(k) ? '✓' : '✗'} ${esc(k)}</span>`
-    ).join('') +
+    r.keys.map(k => {
+      const ok = r.hit.includes(k);
+      return `<span class="${ok ? 'hit' : 'miss'} ${k.required ? 'req' : ''}">${ok ? '✓' : '✗'} ${esc(k.label)}</span>`;
+    }).join('') +
     '</div>' +
+    (!r.pass && r.missingRequired.length
+      ? `<div class="must">꼭 들어가야 할 말: ${r.missingRequired.map(k => esc(k.label)).join(', ')}</div>` : '') +
     (edited ? '<div class="edited-note">✏️ 직접 고친 내용으로 채점했어요</div>' : '') +
-    (!spoke
+    (!spoke && !practiceMode
       ? `<div class="edited-note">⌨️ 타이핑으로 답해서 ${xp} XP예요. 소리 내어 말하면 ${XP_PER_CORRECT} XP!</div>`
       : '');
 }
@@ -1222,59 +1520,91 @@ showBtn.addEventListener('click', () => {
   setStage(3);
 });
 
+/* 받침에 따라 조사를 고른다: josa('치킨', '을', '를') → '치킨을' */
+function josa(word, withBatchim, without) {
+  const w = String(word || '');
+  const c = w.charCodeAt(w.length - 1) - 0xAC00;
+  const has = c >= 0 && c <= 11171 ? (c % 28) !== 0 : false;
+  return w + (has ? withBatchim : without);
+}
+
+/* 오늘 100문제를 다 채우면 연습 모드: 채점은 해 주지만 점수·기록은 남지 않는다 */
+let practiceMode = false;
+
+function showLimitNote() {
+  limitNote.textContent = `오늘은 ${DAILY_LIMIT}문제를 다 채웠어요. 지금부터는 점수 없이 연습만 돼요. 내일 다시 도전해요!`;
+  limitNote.classList.toggle('hidden', !practiceMode);
+}
+
+function cardFeedback(correct) {
+  flashcard.classList.add(correct ? 'pop' : 'shake');
+  setTimeout(() => flashcard.classList.remove('pop', 'shake'), 400);
+  if (correct) soundCorrect(); else soundWrong();
+}
+
+/* 채점 결과를 서버(record_answer)에 저장한다. 점수는 서버가 올린다.
+   화면은 먼저 반응하고, 서버가 거절하면 되돌린다. */
 async function grade(correct, advance = true, xpGain = XP_PER_CORRECT, spoke = true) {
   if (!current || !profile) return;
   const card = current;
+
+  if (practiceMode || todayCount() >= DAILY_LIMIT) {
+    practiceMode = true;
+    showLimitNote();
+    cardFeedback(correct);
+    if (advance) setTimeout(nextCard, correct ? 620 : 420);
+    return;
+  }
+
   const nowIso = new Date().toISOString();
-  const newStage = correct
-    ? Math.min(getProgress(card).leitner_stage + 1, 5)
-    : 1;
+  const before = progressMap[card.id];
+  const newStage = correct ? Math.min(getProgress(card).leitner_stage + 1, 5) : 1;
+  const logEntry = { card_id: card.id, correct, studied_at: nowIso };
 
   // 낙관적 갱신 (화면 먼저 반응)
   progressMap[card.id] = { leitner_stage: newStage, last_reviewed: nowIso };
-  logs.push({ card_id: card.id, correct, studied_at: nowIso });
-
+  logs.push(logEntry);
+  cardFeedback(correct);
   if (correct) {
-    flashcard.classList.add('pop');
-    setTimeout(() => flashcard.classList.remove('pop'), 400);
-    soundCorrect(); confetti();
+    confetti();
     showXpPop(xpGain, spoke ? '정답!' : '정답! ⌨️ 타이핑');
-    profile.score += xpGain;
-    profile.season_score = (profile.season_score || 0) + xpGain;
-    profile.correct_count += 1;
-  } else {
-    flashcard.classList.add('shake');
-    setTimeout(() => flashcard.classList.remove('shake'), 400);
-    soundWrong();
+    profile.score = (profile.score || 0) + xpGain;
   }
-
   refreshHud();
   // 자동 채점일 때는 채점 결과를 읽을 시간을 주고, 학생이 직접 넘긴다
   if (advance) setTimeout(nextCard, correct ? 620 : 420);
 
-  // 서버 저장
-  const tasks = [
-    sb.from('user_card_progress').upsert({
-      user_id: profile.id, card_id: card.id,
-      leitner_stage: newStage, last_reviewed: nowIso
-    }, { onConflict: 'user_id,card_id' }),
-    sb.from('study_log').insert({ user_id: profile.id, card_id: card.id, correct })
-  ];
-  if (correct) {
-    tasks.push(sb.from('profiles')
-      .update({ score: profile.score, correct_count: profile.correct_count, season_score: profile.season_score })
-      .eq('id', profile.id));
-  }
-  const results = await Promise.all(tasks);
-  results.forEach(r => { if (r && r.error) console.error(r.error); });
+  const { data, error } = await sb.rpc('record_answer', {
+    p_card_id: card.id, p_correct: correct, p_spoke: spoke
+  });
 
+  if (error || !data || !data.ok) {
+    // 서버가 받아주지 않았다 → 화면을 되돌린다
+    logs.splice(logs.indexOf(logEntry), 1);
+    if (before) progressMap[card.id] = before; else delete progressMap[card.id];
+    if (correct) profile.score -= xpGain;
+    refreshHud();
+    const reason = data && data.reason;
+    if (reason === 'daily_limit') {
+      practiceMode = true;
+      showLimitNote();
+    } else if (reason === 'too_fast') {
+      showToast('너무 빨라요. 천천히 말해 주세요. 이번 문제는 기록되지 않았어요.');
+    } else {
+      console.error('채점 저장 실패', error || data);
+      showToast('저장하지 못했어요. 인터넷 연결을 확인해 주세요.');
+    }
+    return;
+  }
+
+  if (typeof data.score === 'number') profile.score = data.score;
   if (correct) renderRank();
   renderMe();
 }
 
 
 /* ============================================================
-   HUD (스트릭 / 레벨 / 오늘 목표)
+   HUD (스트릭 / 레벨 / 오늘 푼 문제)
    ============================================================ */
 function computeStreak() {
   const days = new Set(logs.map(l => dateKey(new Date(l.studied_at))));
@@ -1307,145 +1637,499 @@ function refreshHud() {
   streakVal.textContent = computeStreak();
   levelVal.textContent = levelOf(profile?.score);
   const t = todayCount();
-  goalText.textContent = `${Math.min(t, DAILY_GOAL)} / ${DAILY_GOAL}`;
-  goalFill.style.width = Math.min(100, (t / DAILY_GOAL) * 100) + '%';
+  goalLabel.textContent = t >= DAILY_GOAL ? `오늘 푼 문제 · 목표 ${DAILY_GOAL} 달성!` : `오늘 푼 문제 · 목표 ${DAILY_GOAL}`;
+  goalText.textContent = `${Math.min(t, DAILY_LIMIT)} / ${DAILY_LIMIT}`;
+  goalFill.style.width = Math.min(100, (t / DAILY_LIMIT) * 100) + '%';
+  if (t >= DAILY_LIMIT) { practiceMode = true; showLimitNote(); }
 }
 
 /* ============================================================
-   랭킹
+   알림 (토스트 · 창)
+   ============================================================ */
+let toastTimer = null;
+function showToast(msg) {
+  let el = $('toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'toast';
+    el.className = 'toast';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('on'), 2600);
+}
+
+const modalBack = $('modalBack'), modalTitle = $('modalTitle');
+const modalBody = $('modalBody'), modalActions = $('modalActions');
+
+/* buttons: [{ label, cls, onClick }]
+   창이 이미 떠 있으면 줄을 세웠다가, 앞의 창을 닫으면 띄운다. */
+const modalQueue = [];
+function openModal(title, bodyHtml, buttons) {
+  if (!modalBack.classList.contains('hidden')) { modalQueue.push([title, bodyHtml, buttons]); return; }
+  modalTitle.textContent = title;
+  modalBody.innerHTML = bodyHtml;
+  modalActions.innerHTML = '';
+  buttons.forEach(b => {
+    const el = document.createElement('button');
+    el.className = 'btn ' + (b.cls || 'btn-green');
+    el.textContent = b.label;
+    el.addEventListener('click', () => { closeModal(); if (b.onClick) b.onClick(); });
+    modalActions.appendChild(el);
+  });
+  modalBack.classList.remove('hidden');
+}
+function closeModal() {
+  modalBack.classList.add('hidden');
+  if (modalQueue.length) setTimeout(() => openModal(...modalQueue.shift()), 150);
+}
+modalBack.addEventListener('click', e => { if (e.target === modalBack) closeModal(); });
+
+function seen(key) {
+  try { return localStorage.getItem(key) === '1'; } catch (e) { return false; }
+}
+function markSeen(key) {
+  try { localStorage.setItem(key, '1'); } catch (e) { /* 저장 안 돼도 괜찮다 */ }
+}
+
+/* ============================================================
+   시즌
    ============================================================ */
 const MEDALS = ['🥇', '🥈', '🥉'];
 
-/* 같은 리그 학생들끼리, 이번 시즌 XP 로만 겨룬다.
-   누적 XP(score)는 레벨·내 기록에만 쓰이고 순위와는 무관하다. */
-async function renderRank() {
-  const myLeague = Math.min(TOP_LEAGUE, Math.max(1, profile?.league || 1));
-  const lg = leagueOf(myLeague);
-  const left = seasonDaysLeft();
-
-  leagueTitle.textContent = `${lg.icon} ${lg.name} 리그`;
-  leagueDesc.textContent =
-    `${seasonLabel(seasonKeyOf(new Date()))} · ${left > 0 ? `${left}일 남음` : '오늘 종료'} · 정답 1개당 ${XP_PER_CORRECT} XP`;
-
-  const { data, error } = await sb.from('profiles')
-    .select('*').eq('league', myLeague)
-    .order('season_score', { ascending: false }).limit(100);
-
-  if (error) { rankList.innerHTML = '<div class="skeleton">랭킹을 불러올 수 없어요.</div>'; return; }
-  if (!data || !data.length) { rankList.innerHTML = '<div class="skeleton">아직 기록이 없어요.</div>'; return; }
-
-  renderMiniRank(data, lg);
-
-  const n = data.length;
-  const k = zoneSize(n);
-  const upTo   = myLeague < TOP_LEAGUE ? k : 0;              // 최상위 리그는 승급 없음
-  const downFrom = (n >= 5 && myLeague > 1) ? n - k + 1 : 0;  // 최하위 리그·소수 리그는 강등 없음
-
-  const rows = data.slice(0, 40).map((s, i) => {
-    const r = i + 1;
-    const zone = (upTo && r <= upTo) ? 'up' : (downFrom && r >= downFrom) ? 'down' : '';
-    return `
-      <div class="rank-row ${zone} ${r <= 3 ? 'p' + r : ''} ${profile && s.id === profile.id ? 'me' : ''}">
-        <div class="rank-badge">${r <= 3 ? MEDALS[r - 1] : r}</div>
-        <div class="rank-name">
-          ${esc(s.name)}
-          <div class="rank-sub">Lv.${levelOf(s.score)} · 누적 ${(s.score || 0).toLocaleString()} XP</div>
-        </div>
-        <div class="rank-score">${(s.season_score || 0).toLocaleString()}</div>
-      </div>`;
-  });
-
-  // 승급권 / 강등권 구분선 끼워넣기 (아래에서부터 넣어야 자리가 안 밀린다)
-  if (downFrom && downFrom <= rows.length) {
-    rows.splice(downFrom - 1, 0, `<div class="zone down">강등권 ${k}명</div>`);
-  }
-  if (upTo && upTo < rows.length) {
-    rows.splice(upTo, 0, `<div class="zone up">승급권 ${upTo}명 ↑</div>`);
-  }
-
-  rankList.innerHTML = rows.join('');
+async function loadSeason() {
+  const today = kstDateKey();
+  const { data, error } = await sb.from('seasons')
+    .select('*').gte('ends_on', today).order('starts_on', { ascending: true }).limit(3);
+  if (error) { console.error('시즌 불러오기 실패', error); season = null; board = []; renderBanner(); return; }
+  const list = data || [];
+  season = list.find(s => s.starts_on <= today) || list[0] || null;
+  await loadBoard();
+  renderBanner();
 }
 
-/* ---------- 명예의 전당 : 지난 시즌 리그별 1위 ---------- */
-async function renderHall() {
-  const { data, error } = await sb.from('hall_of_fame')
-    .select('*').eq('rank', 1)
-    .order('season_key', { ascending: false })
-    .order('league', { ascending: false })
-    .limit(24);
+async function loadBoard() {
+  board = [];
+  if (!season || seasonState(season) !== 'live') return;
+  const { data, error } = await sb.rpc('season_board', { p_season_id: season.id });
+  if (error) { console.error('순위 불러오기 실패', error); return; }
+  board = data || [];
+}
 
-  if (error) { hallList.innerHTML = '<div class="skeleton">불러올 수 없어요.</div>'; return; }
-  if (!data || !data.length) {
-    hallList.innerHTML = '<div class="skeleton">첫 시즌이 끝나면 여기에 우승자가 새겨져요.</div>';
+function myBoardRow() {
+  return profile ? board.find(r => r.user_id === profile.id) : null;
+}
+
+function seasonRulesHtml(s) {
+  return `
+    <div class="m-prize">1등 상품 · ${esc(s.prize || '추후 공개')}</div>
+    <ul>
+      <li>기간 ${esc(shortDate(s.starts_on))} ~ ${esc(shortDate(s.ends_on))} (마지막 날 밤 12시까지)</li>
+      <li>소리 내어 맞히면 ${XP_PER_CORRECT}점, 타이핑으로 맞히면 ${XP_TYPED}점</li>
+      <li>하루에 ${DAILY_LIMIT}문제까지 점수에 들어가요</li>
+      <li>동점이면 그 점수에 먼저 도달한 사람이 앞서요</li>
+      ${s.note ? `<li>${esc(s.note)}</li>` : ''}
+    </ul>`;
+}
+
+function renderBanner() {
+  const st = seasonState(season);
+  if (st !== 'live' && st !== 'upcoming') { seasonBanner.classList.add('hidden'); return; }
+  const today = kstDateKey();
+  seasonBanner.classList.remove('hidden', 'idle');
+
+  if (st === 'live') {
+    const me = myBoardRow();
+    const left = daysBetween(today, season.ends_on);
+    sbTitle.textContent = `${season.name} · 1등 ${season.prize || '상품'}`;
+    sbSub.textContent = me
+      ? `내 순위 ${me.rank}위 / ${board.length}명 · ${me.score.toLocaleString()}점`
+      : '한 문제만 맞혀도 순위에 올라가요';
+    sbDday.textContent = left > 0 ? `D-${left}` : '오늘 마감';
+  } else {
+    sbTitle.textContent = `${season.name} 곧 시작`;
+    sbSub.textContent = `${shortDate(season.starts_on)} ~ ${shortDate(season.ends_on)} · 1등 ${season.prize || '상품'}`;
+    sbDday.textContent = `시작 D-${daysBetween(today, season.starts_on)}`;
+  }
+}
+
+seasonBanner.addEventListener('click', () => {
+  if (season) showSeasonModal(true);
+});
+
+function showSeasonModal(force = false) {
+  const st = seasonState(season);
+  if (st !== 'live' && st !== 'upcoming') return;
+  const key = 'cmsmosis.seasonSeen.' + season.id;
+  if (!force && seen(key)) return;
+  markSeen(key);
+  openModal(
+    st === 'live' ? `${season.name} 진행 중!` : `${season.name} 곧 시작해요`,
+    seasonRulesHtml(season),
+    [
+      { label: '친구에게 알리기', cls: 'btn-ghost', onClick: shareSeason },
+      { label: '좋아요', cls: 'btn-green' }
+    ]
+  );
+}
+
+/* 지난 시즌 1등이면 한 번 축하 창을 띄운다 */
+async function checkWinner() {
+  if (!profile) return;
+  const { data, error } = await sb.from('season_results')
+    .select('season_id, rank, prize, coupon_sent, seasons(name)')
+    .eq('user_id', profile.id).eq('rank', 1)
+    .order('season_id', { ascending: false }).limit(1);
+  if (error || !data || !data.length) return;
+  const w = data[0];
+  const key = 'cmsmosis.winSeen.' + w.season_id;
+  if (seen(key)) return;
+  markSeen(key);
+  openModal(
+    '축하해요, 1등이에요!',
+    `<p style="font-size:14px;font-weight:700;color:#555;margin:0">${esc(w.seasons?.name || '지난 시즌')}에서 1위를 했어요.</p>
+     <div class="m-prize">${esc(w.prize || '상품')}</div>
+     <p style="font-size:13px;font-weight:700;color:var(--ink-soft);margin:0 0 16px">
+       ${w.coupon_sent ? '선생님이 쿠폰을 보냈어요. 문자나 카카오톡을 확인해 보세요.' : '선생님이 곧 쿠폰을 보내 줄 거예요.'}
+     </p>`,
+    [{ label: '고마워요', cls: 'btn-green' }]
+  );
+  confetti();
+}
+
+/* ---------- 홍보 문구 · 공유 ---------- */
+function promoMessage() {
+  const st = seasonState(season);
+  if (st === 'live' || st === 'upcoming') {
+    return [
+      `[CMSmosis] ${season.name}`,
+      `1등에게 ${josa(season.prize || '상품', '을', '를')} 드려요!`,
+      '',
+      `기간: ${shortDate(season.starts_on)} ~ ${shortDate(season.ends_on)}`,
+      '출석면접 질문과 중등 개념을 소리 내어 답하면 자동으로 채점돼요.',
+      `하루 ${DAILY_LIMIT}문제까지, 맞힐 때마다 ${XP_PER_CORRECT}점.`,
+      season.note ? season.note : null,
+      '',
+      `지금 바로 시작: ${APP_URL}`,
+      '(크롬 브라우저에서 열어야 음성 인식이 돼요)'
+    ].filter(x => x !== null).join('\n');
+  }
+  return [
+    '[CMSmosis] 말하면서 외우는 개념 · 출석면접 연습',
+    '질문을 소리 내어 답하면 자동으로 채점해 줘요.',
+    `시작하기: ${APP_URL}`,
+    '(크롬 브라우저에서 열어야 음성 인식이 돼요)'
+  ].join('\n');
+}
+
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); return true; }
+  catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (e2) { ok = false; }
+    ta.remove();
+    return ok;
+  }
+}
+
+async function shareSeason() {
+  const text = promoMessage();
+  if (navigator.share) {
+    try { await navigator.share({ title: 'CMSmosis', text }); return; }
+    catch (e) { if (e.name === 'AbortError') return; }
+  }
+  showToast(await copyText(text) ? '문구를 복사했어요. 단톡방에 붙여 넣어 주세요.' : '복사하지 못했어요.');
+}
+$('shareBtn').addEventListener('click', shareSeason);
+
+/* ============================================================
+   랭킹 (이번 시즌 · 전체 학생)
+   ============================================================ */
+async function renderRank() {
+  const st = seasonState(season);
+  if (st === 'live') await loadBoard();
+  renderBanner();
+  renderMiniRank();
+
+  if (st === 'none' || st === 'ended') {
+    leagueTitle.textContent = '시즌 순위';
+    leagueDesc.textContent = '지금은 진행 중인 시즌이 없어요.';
+    rankList.innerHTML = '<div class="skeleton">선생님이 새 시즌을 열면 여기에 순위가 떠요.</div>';
     return;
   }
 
+  const today = kstDateKey();
+  leagueTitle.textContent = season.name;
+  if (st === 'upcoming') {
+    leagueDesc.textContent = `${shortDate(season.starts_on)} ~ ${shortDate(season.ends_on)} · 1등 ${season.prize || '상품'}`;
+    rankList.innerHTML = `<div class="skeleton">${esc(shortDate(season.starts_on))}부터 점수가 쌓여요. 시작 D-${daysBetween(today, season.starts_on)}</div>`;
+    return;
+  }
+
+  const left = daysBetween(today, season.ends_on);
+  leagueDesc.textContent =
+    `${shortDate(season.starts_on)} ~ ${shortDate(season.ends_on)} · ${left > 0 ? `${left}일 남음` : '오늘 마감'} · 1등 ${season.prize || '상품'}`;
+
+  if (!board.length) {
+    rankList.innerHTML = '<div class="skeleton">아직 점수가 없어요. 첫 정답의 주인공이 되어 보세요!</div>';
+    return;
+  }
+
+  const me = myBoardRow();
+  const rows = board.slice(0, 40).map(s => `
+      <div class="rank-row ${s.rank <= 3 ? 'p' + s.rank : ''} ${me && s.user_id === me.user_id ? 'me' : ''}">
+        <div class="rank-badge">${s.rank <= 3 ? MEDALS[s.rank - 1] : s.rank}</div>
+        <div class="rank-name">
+          ${esc(s.name)}
+          <div class="rank-sub">${s.rank === 1 ? `지금 1등 · ${esc(season.prize || '상품')} 후보` : `${(s.answered || 0).toLocaleString()}문제 풀이`}</div>
+        </div>
+        <div class="rank-score">${(s.score || 0).toLocaleString()}</div>
+      </div>`);
+  if (me && me.rank > 40) {
+    rows.push(`<div class="zone up">···</div>
+      <div class="rank-row me"><div class="rank-badge">${me.rank}</div>
+        <div class="rank-name">${esc(me.name)}</div>
+        <div class="rank-score">${me.score.toLocaleString()}</div></div>`);
+  }
+  rankList.innerHTML = rows.join('');
+}
+
+/* ---------- 명예의 전당 : 지난 시즌 1~3위 ---------- */
+async function renderHall() {
+  const { data, error } = await sb.from('season_results')
+    .select('season_id, rank, name, score, prize, coupon_sent, seasons(name, ends_on)')
+    .order('season_id', { ascending: false }).order('rank', { ascending: true })
+    .limit(30);
+
+  if (error) { hallList.innerHTML = '<div class="skeleton">불러올 수 없어요.</div>'; return; }
+  if (!data || !data.length) {
+    hallList.innerHTML = '<div class="skeleton">첫 시즌이 끝나면 여기에 1~3위가 새겨져요.</div>';
+    return;
+  }
+
+  let lastSeason = null;
   hallList.innerHTML = data.map(h => {
-    const lg = leagueOf(h.league);
-    return `
+    const head = h.season_id !== lastSeason
+      ? `<div class="zone up" style="margin-top:${lastSeason === null ? 0 : 10}px">${esc(h.seasons?.name || '시즌')}${h.seasons?.ends_on ? ' · ' + esc(shortDate(h.seasons.ends_on)) + ' 종료' : ''}</div>`
+      : '';
+    lastSeason = h.season_id;
+    return head + `
       <div class="hall-row">
-        <div class="hall-ico">${lg.icon}</div>
+        <div class="hall-ico">${MEDALS[h.rank - 1] || h.rank}</div>
         <div class="hall-main">
           <div class="hall-name">${esc(h.name)}</div>
-          <div class="hall-sub">${esc(seasonLabel(h.season_key))} · ${lg.name} 리그 1위</div>
+          <div class="hall-sub">${h.rank === 1 && h.prize ? esc(h.prize) + (h.coupon_sent ? ' · 전달 완료' : ' · 전달 준비 중') : h.rank + '위'}</div>
         </div>
-        <div class="hall-score">${(h.score || 0).toLocaleString()} XP</div>
+        <div class="hall-score">${(h.score || 0).toLocaleString()}점</div>
       </div>`;
   }).join('');
 }
 
 /* ---------- 학습 화면 하단 미니 랭킹 ---------- */
-function renderMiniRank(board, lg) {
+function renderMiniRank() {
   if (!profile) return;
+  const st = seasonState(season);
 
-  const myIdx = board.findIndex(s => s.id === profile.id);
-  const myRank = myIdx >= 0 ? myIdx + 1 : board.length + 1;
-  const myScore = profile.season_score || 0;
-  const n = board.length;
-  const k = zoneSize(n);
-  const myLeague = Math.min(TOP_LEAGUE, Math.max(1, profile.league || 1));
-
-  mrMedal.textContent = myRank <= 3 ? MEDALS[myRank - 1] : (lg ? lg.icon : '🏅');
-  mrRank.innerHTML = `${lg ? esc(lg.name) + ' 리그 ' : ''}<em>${myRank}위</em> / ${n}명`;
-  mrXp.textContent = myScore.toLocaleString() + ' XP';
-
-  // 바로 위 사람까지 남은 XP
-  const above = myIdx > 0 ? board[myIdx - 1] : null;
-  if (above) {
-    const gap = Math.max((above.season_score || 0) - myScore + 1, 1);
-    const toUp = (myLeague < TOP_LEAGUE && myRank > k)
-      ? ((board[k - 1]?.season_score || 0) - myScore + 1) : 0;
+  if (st !== 'live') {
+    mrMedal.textContent = '🏅';
+    mrRank.innerHTML = st === 'upcoming' ? `<em>${esc(season.name)}</em> 곧 시작` : '진행 중인 시즌이 없어요';
     mrChase.className = 'chase';
-    mrChase.textContent = toUp > 0
-      ? `승급까지 ${toUp.toLocaleString()} XP 🔥`
-      : `${above.name}님까지 ${gap.toLocaleString()} XP 🔥`;
-  } else if (myIdx === 0) {
-    const below = board[1];
-    mrChase.className = 'chase lead';
-    mrChase.textContent = below
-      ? `1위 수성 중 · ${below.name}님과 ${(myScore - (below.season_score || 0)).toLocaleString()} XP 차이`
-      : '1위 독주 중이에요';
+    mrChase.textContent = st === 'upcoming' ? `${shortDate(season.starts_on)}부터 점수가 쌓여요` : '누적 XP는 계속 쌓여요';
+    mrXp.textContent = (profile.score || 0).toLocaleString() + ' XP';
+    mrList.innerHTML = `<button class="mr-more" id="mrMore">순위 탭 보기 →</button>`;
   } else {
-    mrChase.className = 'chase';
-    mrChase.textContent = '한 문제만 맞혀도 순위에 올라가요';
+    const me = myBoardRow();
+    const n = board.length;
+    const myRank = me ? me.rank : n + 1;
+    const myScore = me ? me.score : 0;
+    const myIdx = me ? board.indexOf(me) : -1;
+
+    mrMedal.textContent = myRank <= 3 ? MEDALS[myRank - 1] : '🏅';
+    mrRank.innerHTML = me ? `<em>${myRank}위</em> / ${n}명` : `아직 순위 없음 · ${n}명 참여 중`;
+    mrXp.textContent = myScore.toLocaleString() + '점';
+
+    if (me && myIdx === 0) {
+      const below = board[1];
+      mrChase.className = 'chase lead';
+      mrChase.textContent = below
+        ? `1위 · ${season.prize || '상품'}까지 지키는 중 · ${below.name}님과 ${(myScore - below.score).toLocaleString()}점 차이`
+        : `1위 독주 중 · ${josa(season.prize || '상품', '이', '가')} 보여요`;
+    } else if (me) {
+      const above = board[myIdx - 1];
+      const toFirst = board[0].score - myScore + (board[0].score === myScore ? 0 : 1);
+      mrChase.className = 'chase';
+      mrChase.textContent = myRank <= 5
+        ? `1위까지 ${Math.max(toFirst, 1).toLocaleString()}점 🔥`
+        : `${above.name}님까지 ${Math.max(above.score - myScore + 1, 1).toLocaleString()}점 🔥`;
+    } else {
+      mrChase.className = 'chase';
+      mrChase.textContent = '한 문제만 맞혀도 순위에 올라가요';
+    }
+
+    const from = Math.max(0, myIdx - 2);
+    const near = board.slice(from, from + 5);
+    mrList.innerHTML = near.map(s => `
+      <div class="mr-row ${me && s.user_id === me.user_id ? 'me' : ''}">
+        <span class="n">${s.rank <= 3 ? MEDALS[s.rank - 1] : s.rank}</span>
+        <span class="nm">${esc(s.name)}</span>
+        <span class="sc">${(s.score || 0).toLocaleString()}</span>
+      </div>
+    `).join('') + `<button class="mr-more" id="mrMore">전체 순위 보기 →</button>`;
   }
-
-  // 내 주변 순위 (위 2명 + 나 + 아래 2명)
-  const from = Math.max(0, myIdx - 2);
-  const near = board.slice(from, from + 5);
-
-  mrList.innerHTML = near.map((s, i) => `
-    <div class="mr-row ${s.id === profile.id ? 'me' : ''}">
-      <span class="n">${from + i < 3 ? MEDALS[from + i] : from + i + 1}</span>
-      <span class="nm">${esc(s.name)}</span>
-      <span class="sc">${(s.season_score || 0).toLocaleString()}</span>
-    </div>
-  `).join('') + `<button class="mr-more" id="mrMore">리그 순위 보기 →</button>`;
 
   $('mrMore').addEventListener('click', () => {
     document.querySelector('.tabbar button[data-tab="rank"]').click();
   });
 }
+
+/* ============================================================
+   관리 탭 (선생님)
+   ============================================================ */
+const admId = $('admId'), admName = $('admName'), admStart = $('admStart'), admEnd = $('admEnd');
+const admPrize = $('admPrize'), admNote = $('admNote'), admMsg = $('admMsg');
+const admSave = $('admSave'), admCancel = $('admCancel'), admFormTitle = $('admFormTitle');
+const admSeasons = $('admSeasons'), promoText = $('promoText');
+
+function admSetMsg(text, kind) {
+  admMsg.textContent = text;
+  admMsg.className = 'adm-msg' + (kind ? ' ' + kind : '');
+}
+
+function admResetForm() {
+  admId.value = ''; admName.value = ''; admPrize.value = ''; admNote.value = '';
+  const today = kstDateKey();
+  admStart.value = today;
+  admEnd.value = kstDateKey(new Date(Date.now() + 13 * DAY_MS));
+  admFormTitle.textContent = '새 시즌 만들기';
+  admCancel.classList.add('hidden');
+}
+
+function admEdit(s) {
+  admId.value = s.id; admName.value = s.name; admStart.value = s.starts_on; admEnd.value = s.ends_on;
+  admPrize.value = s.prize || ''; admNote.value = s.note || '';
+  admFormTitle.textContent = '시즌 고치기';
+  admCancel.classList.remove('hidden');
+  admSetMsg('');
+  document.querySelector('#tab-admin').scrollIntoView({ behavior: 'smooth' });
+}
+
+admCancel.addEventListener('click', () => { admResetForm(); admSetMsg(''); });
+
+admSave.addEventListener('click', async () => {
+  admSave.disabled = true;
+  admSetMsg('저장 중…');
+  const { error } = await sb.rpc('admin_save_season', {
+    p_id: admId.value ? Number(admId.value) : null,
+    p_name: admName.value.trim(),
+    p_starts: admStart.value || null,
+    p_ends: admEnd.value || null,
+    p_prize: admPrize.value.trim(),
+    p_note: admNote.value.trim()
+  });
+  admSave.disabled = false;
+  if (error) { admSetMsg(error.message, 'err'); return; }
+  admSetMsg('저장했어요.', 'ok');
+  admResetForm();
+  await loadSeason();
+  await loadAdmin();
+});
+
+async function loadAdmin() {
+  if (!profile?.is_admin) return;
+  promoText.value = promoMessage();
+
+  const { data: seasons, error } = await sb.from('seasons').select('*').order('starts_on', { ascending: false }).limit(30);
+  if (error) {
+    admSeasons.innerHTML = `<div class="skeleton">시즌 표를 불러올 수 없어요. supabase_season_v2.sql 을 먼저 실행해 주세요.<br>(${esc(error.message)})</div>`;
+    return;
+  }
+  if (!seasons.length) { admSeasons.innerHTML = '<div class="skeleton">아직 만든 시즌이 없어요.</div>'; return; }
+
+  const ids = seasons.map(s => s.id);
+  const { data: results } = await sb.from('season_results').select('*').in('season_id', ids).order('rank');
+
+  admSeasons.innerHTML = seasons.map(s => {
+    const st = seasonState(s);
+    const stLabel = { live: '진행 중', upcoming: '시작 전', ended: s.settled_at ? '종료' : '종료 · 정산 대기' }[st];
+    const res = (results || []).filter(r => r.season_id === s.id);
+    const resHtml = res.length ? res.map(r => `
+        <div class="win-row" data-season="${s.id}" data-rank="${r.rank}">
+          <span>${MEDALS[r.rank - 1] || r.rank}</span>
+          <span class="wr-name">${esc(r.name)} · ${r.score.toLocaleString()}점</span>
+          ${r.rank === 1 ? `
+            <input type="text" class="wr-note" placeholder="메모 (예: 10/20 문자)" value="${esc(r.coupon_note)}">
+            <label><input type="checkbox" class="wr-sent" ${r.coupon_sent ? 'checked' : ''}> 쿠폰 보냄</label>` : ''}
+        </div>`).join('') : '';
+    return `
+      <div class="adm-season" data-id="${s.id}">
+        <div class="as-head">
+          <div class="as-name">${esc(s.name)}</div>
+          <span class="as-state ${st === 'live' ? 'live' : ''}">${stLabel}</span>
+        </div>
+        <div class="as-sub">${esc(s.starts_on)} ~ ${esc(s.ends_on)} · 1등 ${esc(s.prize || '(상품 미정)')}</div>
+        ${resHtml ? `<div style="margin-top:8px">${resHtml}</div>` : ''}
+        <div class="as-btns">
+          ${!s.settled_at ? `<button class="btn btn-ghost btn-sm" data-act="edit">고치기</button>` : ''}
+          ${st === 'live' ? `<button class="btn btn-ghost btn-sm" data-act="board">지금 순위</button>
+                             <button class="btn btn-ghost btn-sm" data-act="end">오늘로 끝내기</button>` : ''}
+          ${st === 'upcoming' ? `<button class="btn btn-ghost btn-sm" data-act="del">지우기</button>` : ''}
+        </div>
+        <div class="as-board"></div>
+      </div>`;
+  }).join('');
+
+  admSeasons.querySelectorAll('.adm-season').forEach(box => {
+    const s = seasons.find(x => String(x.id) === box.dataset.id);
+    box.querySelectorAll('button[data-act]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const act = btn.dataset.act;
+        if (act === 'edit') return admEdit(s);
+        if (act === 'board') {
+          const { data } = await sb.rpc('season_board', { p_season_id: s.id });
+          box.querySelector('.as-board').innerHTML = (data || []).slice(0, 10).map(r =>
+            `<div class="win-row"><span>${r.rank}</span><span class="wr-name">${esc(r.name)}</span><span>${r.score.toLocaleString()}점 · ${r.answered}문제</span></div>`
+          ).join('') || '<div class="as-sub">아직 점수가 없어요.</div>';
+          return;
+        }
+        if (act === 'end') {
+          if (!confirm(`'${s.name}'을 오늘로 끝낼까요? 내일 0시에 1~3위가 새겨져요.`)) return;
+          const { error } = await sb.rpc('admin_save_season', {
+            p_id: s.id, p_name: s.name, p_starts: s.starts_on, p_ends: kstDateKey(), p_prize: s.prize, p_note: s.note
+          });
+          if (error) return showToast(error.message);
+          await loadSeason(); await loadAdmin();
+          return;
+        }
+        if (act === 'del') {
+          if (!confirm(`'${s.name}'을 지울까요?`)) return;
+          const { error } = await sb.rpc('admin_delete_season', { p_id: s.id });
+          if (error) return showToast(error.message);
+          await loadSeason(); await loadAdmin();
+        }
+      });
+    });
+    box.querySelectorAll('.win-row[data-rank="1"]').forEach(row => {
+      const save = async () => {
+        const { error } = await sb.rpc('admin_set_coupon', {
+          p_season_id: Number(row.dataset.season), p_rank: 1,
+          p_sent: row.querySelector('.wr-sent').checked,
+          p_note: row.querySelector('.wr-note').value.trim()
+        });
+        showToast(error ? error.message : '저장했어요.');
+      };
+      row.querySelector('.wr-sent').addEventListener('change', save);
+      row.querySelector('.wr-note').addEventListener('change', save);
+    });
+  });
+}
+
+$('promoCopy').addEventListener('click', async () => {
+  showToast(await copyText(promoText.value) ? '복사했어요.' : '복사하지 못했어요.');
+});
 
 /* ============================================================
    내 기록 (통계 + 달력)
@@ -1519,6 +2203,7 @@ document.querySelectorAll('.tabbar button').forEach(btn => {
     $('tab-' + btn.dataset.tab).classList.add('active');
     if (btn.dataset.tab === 'rank') renderRank();
     if (btn.dataset.tab === 'me')   renderMe();
+    if (btn.dataset.tab === 'admin') loadAdmin();
   });
 });
 
@@ -1750,13 +2435,23 @@ if (!SR) {
 /* ============================================================
    앱 시작
    ============================================================ */
+/* Supabase 는 한 번에 1000줄까지만 돌려준다. 카드가 늘어도 다 받도록 나눠 받는다. */
+async function fetchAllCards() {
+  const all = [];
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await sb.from('concept_cards').select('*').order('id').range(from, from + 999);
+    if (error) return { data: null, error };
+    all.push(...data);
+    if (data.length < 1000) return { data: all, error: null };
+  }
+}
+
 async function startApp(fallbackName) {
   const { data: { user } } = await sb.auth.getUser();
   if (!user) return;
 
-  // 시즌이 넘어갔으면 여기서 정산된다 (승강 처리 + 명예의 전당 기록 + 점수 초기화).
-  // 정산할 게 없으면 아무 일도 일어나지 않는다. 프로필을 읽기 전에 불러야 한다.
-  const settled = await sb.rpc('settle_seasons');
+  // 끝난 시즌이 있으면 1~3위를 새긴다. 할 일이 없으면 바로 끝난다.
+  const settled = await sb.rpc('settle_finished_seasons');
   if (settled?.error) console.error('시즌 정산 실패', settled.error);
 
   profile = await ensureProfile(user.id, fallbackName || nameInput.value.trim());
@@ -1765,14 +2460,15 @@ async function startApp(fallbackName) {
   authScreen.classList.add('hidden');
   app.classList.remove('hidden');
   userName.textContent = profile.name;
+  $('adminTabBtn').classList.toggle('hidden', !profile.is_admin);
 
   const [cardsRes, progRes, logRes] = await Promise.all([
-    sb.from('concept_cards').select('*'),
+    fetchAllCards(),
     sb.from('user_card_progress').select('*').eq('user_id', user.id),
     sb.from('study_log').select('card_id, correct, studied_at')
       .eq('user_id', user.id)
       .order('studied_at', { ascending: false })
-      .limit(20000)
+      .limit(1000)
   ]);
 
   if (cardsRes.error) {
@@ -1780,17 +2476,27 @@ async function startApp(fallbackName) {
     return;
   }
   allCards = cardsRes.data || [];
+  allCards.forEach(c => { if (!c.subject) c.subject = '수학'; });
   progressMap = {};
   (progRes.data || []).forEach(p => { progressMap[p.card_id] = p; });
   logs = logRes.data || [];
+  practiceMode = false;
 
+  try { selectedSubject = localStorage.getItem('cmsmosis.subject'); } catch (e) { selectedSubject = null; }
+  renderSubjects();
   renderUnits();
   buildQueue();
   nextCard();
   refreshHud();
+  showLimitNote();
+
+  await loadSeason();
   renderRank();
   renderHall();
   renderMe();
+  if (profile.is_admin) { admResetForm(); loadAdmin(); }
+  await checkWinner();
+  showSeasonModal();
 }
 
 (async function boot() {
