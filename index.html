@@ -11,7 +11,7 @@
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="CMSmosis" />
 <meta property="og:title" content="CMSmosis · 말하면서 외우는 개념 · 출석면접" />
-<meta property="og:description" content="시즌 1등에게 치킨 쿠폰! 하루 100문제까지, 소리 내어 말하고 자동 채점받아요." />
+<meta property="og:description" content="시즌 1등에게 치킨 쿠폰! 하루 50문제까지, 소리 내어 말하고 자동 채점받아요." />
 <meta property="og:url" content="https://cmsmosis.vercel.app/" />
 <meta property="og:image" content="https://cmsmosis.vercel.app/og-image.png" />
 <meta property="og:image:width" content="1200" />
@@ -720,7 +720,7 @@ main { flex: 1; padding: 18px 16px 8px; }
     <div class="goal-wrap">
       <div class="goal-row">
         <span id="goalLabel">오늘 푼 문제 · 목표 20</span>
-        <span id="goalText">0 / 100</span>
+        <span id="goalText">0 / 50</span>
       </div>
       <div class="goalbar"><div class="goalbar-fill" id="goalFill"></div></div>
     </div>
@@ -915,7 +915,7 @@ const XP_PER_LEVEL = 100;
 /* ---------- 시즌 ----------
    시즌은 선생님이 관리 탭에서 이름·기간·상품을 정해 만든다 (supabase_season_v2.sql).
    날짜는 모두 한국 날짜(YYYY-MM-DD)로 다룬다. */
-const DAILY_LIMIT = 100;            // 하루에 채점되는 문제 수. 서버 record_answer() 와 같아야 한다.
+const DAILY_LIMIT = 50;             // 하루에 채점되는 문제 수. 서버 record_answer() 와 같아야 한다.
 const DAY_MS = 86400000;
 const APP_URL = 'https://cmsmosis.vercel.app/';
 
@@ -1535,7 +1535,7 @@ function josa(word, withBatchim, without) {
   return w + (has ? withBatchim : without);
 }
 
-/* 오늘 100문제를 다 채우면 연습 모드: 채점은 해 주지만 점수·기록은 남지 않는다 */
+/* 오늘 50문제를 다 채우면 연습 모드: 채점은 해 주지만 점수·기록은 남지 않는다 */
 let practiceMode = false;
 
 function showLimitNote() {
@@ -2220,23 +2220,68 @@ document.querySelectorAll('.tabbar button').forEach(btn => {
 let recognition = null;
 let listening = false;
 let transcript = '';
+let transcriptAlts = [];     // 인식기가 준 다른 후보 문장들. 채점할 때 같이 본다
+let heardBefore = '';        // 인식기가 혼자 멈췄다 다시 켜질 때, 앞에서 들은 내용
+let heardBeforeAlts = [];
+let autoRestarts = 0;        // 말 없이 혼자 다시 켜진 횟수 (무한히 켜지지 않게)
+let gradeOnEnd = false;      // "말하기 종료"를 눌렀다 → 마지막 말까지 받은 뒤 채점
+let gradeTimer = null;
+let phrasesOff = false;      // 이 브라우저가 '예상 단어 알려주기'를 못 하면 끈다
 
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+/* 안드로이드 크롬은 앞에서 들은 말을 다시 붙여 보내서 같은 말이 두 번씩 적힌다.
+   새 조각이 앞 내용을 포함하면 바꿔 끼우고, 이미 있는 말이면 버린다. */
+function joinFinals(parts) {
+  let out = '';
+  for (const p of parts) {
+    const t = p.trim();
+    if (!t) continue;
+    const o = out.trim();
+    if (!o || t.startsWith(o)) out = t;
+    else if (o.endsWith(t) || o.includes(t)) continue;
+    else out = o + ' ' + t;
+  }
+  return out;
+}
+
+/* 이 카드에서 나올 만한 낱말을 인식기에 미리 알려준다 (지원하는 크롬에서만).
+   키워드 중 한글 낱말만 쓴다. 숫자·기호는 알려줘도 도움이 안 된다. */
+function cardPhrases(card) {
+  const words = new Set();
+  parseKeywords(card).forEach(k => k.alts.forEach(a => {
+    if (/^[가-힣 ]{2,15}$/.test(a)) words.add(a);
+  }));
+  return [...words].slice(0, 30);
+}
+
+function applyPhrases() {
+  if (!recognition || phrasesOff || !current || !('SpeechRecognitionPhrase' in window)) return;
+  try {
+    recognition.phrases = cardPhrases(current).map(p => new window.SpeechRecognitionPhrase(p, 5.0));
+  } catch (e) { phrasesOff = true; }
+}
+
 if (SR) {
   recognition = new SR();
   recognition.lang = 'ko-KR';
   recognition.continuous = true;      // 말이 잠깐 끊겨도 계속 듣는다
   recognition.interimResults = true;  // 말하는 중에도 화면에 보여준다
+  recognition.maxAlternatives = 5;    // 후보 문장을 여러 개 받아서 채점에 같이 쓴다
 
   recognition.onresult = e => {
-    let fixed = '', tentative = '';
+    const finals = [], alts = [];
+    let tentative = '';
     for (let i = 0; i < e.results.length; i++) {
-      const txt = e.results[i][0].transcript;
-      if (e.results[i].isFinal) fixed += txt;
-      else tentative += txt;
+      const r = e.results[i];
+      if (r.isFinal) finals.push(r[0].transcript);
+      else tentative += r[0].transcript;
+      for (let j = 1; j < r.length; j++) alts.push(r[j].transcript);
     }
     if (editing) return;              // 고치는 중에는 입력칸을 건드리지 않는다
-    transcript = (fixed + tentative).trim();
+    autoRestarts = 0;
+    transcript = [heardBefore, joinFinals(finals), tentative.trim()].filter(Boolean).join(' ').trim();
+    transcriptAlts = [...heardBeforeAlts, ...alts];
     if (transcript) spokeThisCard = true;   // 실제로 말했다 → 10 XP 자격
     heardText.textContent = '🗣️ ' + (transcript || '…');
     heardText.classList.add('on');
@@ -2246,6 +2291,13 @@ if (SR) {
   recognition.onerror = ev => {
     if (ev.error === 'no-speech') return;   // 잠깐 조용한 건 오류가 아니다
     if (ev.error === 'aborted') return;     // "다시 말하기" 로 우리가 끈 것이다
+    if (ev.error === 'phrases-not-supported') {   // 예상 단어 기능을 못 쓰는 크롬 → 끄고 다시 듣기
+      phrasesOff = true;
+      try { recognition.phrases = []; } catch (e) { /* noop */ }
+      restartWanted = true;
+      return;
+    }
+    gradeOnEnd = false;
     heardText.textContent = ev.error === 'not-allowed'
       ? '마이크 권한이 필요해요. 주소창의 자물쇠에서 허용해주세요.'
       : '잘 안 들렸어요. 다시 시도해볼까요?';
@@ -2256,8 +2308,22 @@ if (SR) {
   // 다시 말하기는 인식기를 껐다 켜야 한다. stop()/abort() 는 곧바로 멈추지 않고
   // onend 가 나중에 오기 때문에, 여기서 이어받아 다시 시작한다.
   recognition.onend = () => {
+    if (gradeOnEnd) {                 // "말하기 종료" → 마지막 말까지 받았으니 채점
+      gradeOnEnd = false;
+      clearTimeout(gradeTimer);
+      setMicIdle();
+      finishSpeaking();
+      return;
+    }
+    if (restartWanted) { restartWanted = false; listening = false; startListening(); return; }
+    // 학생이 끄지 않았는데 인식기가 혼자 멈췄다 (말이 잠깐 끊기면 크롬이 멈춘다) → 이어서 듣는다
+    if (listening && autoRestarts < 3) {
+      autoRestarts++;
+      heardBefore = transcript;
+      heardBeforeAlts = transcriptAlts;
+      try { recognition.start(); return; } catch (e) { /* 아래에서 멈춤 처리 */ }
+    }
     setMicIdle();
-    if (restartWanted) { restartWanted = false; startListening(); }
   };
 }
 
@@ -2292,7 +2358,9 @@ function closeEdit() {
 
 function stopListening() {
   transcript = '';
+  transcriptAlts = [];
   restartWanted = false;
+  gradeOnEnd = false;
   closeEdit();
   if (!recognition || !listening) { setMicIdle(); return; }
   try { recognition.stop(); } catch (e) { /* 이미 멈춘 상태 */ }
@@ -2302,6 +2370,12 @@ function stopListening() {
 function startListening() {
   if (!recognition || listening) return;
   transcript = '';
+  transcriptAlts = [];
+  heardBefore = '';
+  heardBeforeAlts = [];
+  autoRestarts = 0;
+  gradeOnEnd = false;
+  applyPhrases();
   wasEdited = false;
   heardInput.value = '';
   closeEdit();
@@ -2321,11 +2395,21 @@ micBtn.addEventListener('click', () => {
   if (editing) { finishSpeaking(); return; }   // 고친 내용으로 채점
   if (!recognition) return;
 
-  if (listening) {          // 두 번째 누름 = 말하기 종료 → 바로 채점
+  if (listening) {          // 두 번째 누름 = 말하기 종료 → 마지막 말까지 받고 채점
     restartWanted = false;
-    try { recognition.stop(); } catch (e) { /* noop */ }
-    setMicIdle();
-    finishSpeaking();
+    listening = false;      // 혼자 다시 켜지지 않게
+    gradeOnEnd = true;
+    micBtn.textContent = '채점 중…';
+    try { recognition.stop(); } catch (e) { gradeOnEnd = false; }
+    // onend 가 안 오는 브라우저도 있어서 잠깐만 기다린다
+    clearTimeout(gradeTimer);
+    gradeTimer = setTimeout(() => {
+      if (!gradeOnEnd) return;
+      gradeOnEnd = false;
+      setMicIdle();
+      finishSpeaking();
+    }, 1500);
+    if (!gradeOnEnd) { setMicIdle(); finishSpeaking(); }
     return;
   }
 
@@ -2394,7 +2478,13 @@ function finishSpeaking() {
 
   if (!hasGradingKeywords(current)) return;   // 채점 기준이 없는 문제 → 정답만
 
-  const result = gradeBySpeech(current, said);
+  let result = gradeBySpeech(current, said);
+  // 인식기가 가장 그럴듯하다고 고른 문장이 틀렸어도, 다른 후보 문장에 정답 낱말이 있으면 인정한다
+  // (예: 첫 후보는 "내 심장", 둘째 후보는 "내심이") — 직접 고친 경우는 고친 내용만 본다
+  if (!result.pass && spoke && !edited && transcriptAlts.length) {
+    const withAlts = gradeBySpeech(current, [said, ...transcriptAlts].join(' '));
+    if (withAlts.pass) result = withAlts;
+  }
   showVerdict(result, { edited, spoke, xp });
   grade(result.pass, false, xp, spoke);
 }
